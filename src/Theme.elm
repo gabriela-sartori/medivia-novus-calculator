@@ -5,6 +5,7 @@ module Theme exposing
     , error
     , grey100
     , grey200
+    , grey900
     , pink
     , red
     , spaceX
@@ -53,6 +54,11 @@ grey100 =
 grey200 : E.Color
 grey200 =
     E.rgb255 0xDD 0xDD 0xDD
+
+
+grey900 : E.Color
+grey900 =
+    E.rgb255 0x66 0x66 0x66
 
 
 error : E.Color

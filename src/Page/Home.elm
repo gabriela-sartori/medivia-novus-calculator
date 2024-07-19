@@ -131,7 +131,7 @@ viewMeleeDamage model =
             { onChange = String.toInt >> Maybe.withDefault 10 >> InputMeleeSkill
             , text = String.fromInt model.meleeSkill
             , placeholder = Nothing
-            , label = EI.labelAbove [] (E.text "Skill")
+            , label = EI.labelAbove [] (E.text "Melee Skill")
             }
         , Theme.spaceY 12
         , EI.text [ E.width E.fill ]
@@ -151,13 +151,13 @@ viewMeleeDamage model =
                     }
           in
           E.column [ E.paddingEach { edges | top = 12 }, E.spacing 8 ]
-            [ E.row []
-                [ E.el [ EF.bold ] (E.text "Min: ")
-                , E.text (String.fromFloat damageRange.min)
+            [ E.row [ E.spacing 8 ]
+                [ E.el [ EF.bold ] (E.text "Min:")
+                , viewFloat damageRange.min
                 ]
-            , E.row []
-                [ E.el [ EF.bold ] (E.text "Max: ")
-                , E.text (String.fromFloat damageRange.max)
+            , E.row [ E.spacing 8 ]
+                [ E.el [ EF.bold ] (E.text "Max:")
+                , viewFloat damageRange.max
                 ]
             ]
         ]
@@ -196,7 +196,7 @@ viewDistanceDamage model =
             { onChange = String.toInt >> Maybe.withDefault 10 >> InputDistanceSkill
             , text = String.fromInt model.distanceSkill
             , placeholder = Nothing
-            , label = EI.labelAbove [] (E.text "Skill")
+            , label = EI.labelAbove [] (E.text "Distance Skill")
             }
         , Theme.spaceY 12
         , EI.text [ E.width E.fill ]
@@ -216,13 +216,13 @@ viewDistanceDamage model =
                     }
           in
           E.column [ E.paddingEach { edges | top = 12 }, E.spacing 8 ]
-            [ E.row []
-                [ E.el [ EF.bold ] (E.text "Min: ")
-                , E.text (String.fromFloat damageRange.min)
+            [ E.row [ E.spacing 8 ]
+                [ E.el [ EF.bold ] (E.text "Min:")
+                , viewFloat damageRange.min
                 ]
-            , E.row []
-                [ E.el [ EF.bold ] (E.text "Max: ")
-                , E.text (String.fromFloat damageRange.max)
+            , E.row [ E.spacing 8 ]
+                [ E.el [ EF.bold ] (E.text "Max:")
+                , viewFloat damageRange.max
                 ]
             ]
         ]
@@ -261,8 +261,8 @@ meleeDamage { level, stance, skill, attack } =
         min =
             toFloat level / 4 + (max * 0.15)
     in
-    { min = round2 (Basics.min min max)
-    , max = round2 (Basics.max min max)
+    { min = Basics.min min max
+    , max = Basics.max min max
     }
 
 
@@ -289,11 +289,33 @@ distanceDamage { level, stance, skill, attack } =
         min =
             toFloat level / 5 + (max * 0.2)
     in
-    { min = round2 (Basics.min min max)
-    , max = round2 (Basics.max min max)
+    { min = Basics.min min max
+    , max = Basics.max min max
     }
 
 
-round2 : Float -> Float
-round2 value =
-    toFloat (round (value * 100)) / 100
+
+-- Helpers
+
+
+viewFloat : Float -> E.Element msg
+viewFloat value =
+    let
+        intPart : Int
+        intPart =
+            truncate value
+
+        decPart : Int
+        decPart =
+            truncate ((value - toFloat intPart) * 100)
+    in
+    E.row []
+        [ E.text (String.fromInt intPart)
+        , E.el
+            [ EF.size 12
+            , E.moveDown 3
+            , E.moveRight 1
+            , EF.color Theme.grey900
+            ]
+            (E.text ("." ++ String.padLeft 2 '0' (String.fromInt decPart)))
+        ]
