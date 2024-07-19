@@ -1,10 +1,10 @@
 module Page.Home exposing (FightStance(..), Model, Msg(..), init, subscriptions, update, view)
 
-import Bridge
 import Element as E
 import Element.Border as EBO
 import Element.Font as EF
 import Element.Input as EI
+import Html.Attributes as HA
 import Shared
 import Theme exposing (edges)
 
@@ -18,6 +18,9 @@ type alias Model =
     , distanceLevel : Int
     , distanceSkill : Int
     , distanceAttack : Int
+    , blockingFightStance : FightStance
+    , blockingSkill : Int
+    , blockingDefense : Int
     }
 
 
@@ -31,6 +34,9 @@ init =
       , distanceLevel = 1
       , distanceSkill = 10
       , distanceAttack = 10
+      , blockingFightStance = FightStanceDefensive
+      , blockingSkill = 10
+      , blockingDefense = 10
       }
     , Cmd.none
     )
@@ -45,6 +51,9 @@ type Msg
     | InputDistanceLevel Int
     | InputDistanceSkill Int
     | InputDistanceAttack Int
+    | InputBlockingFightStance FightStance
+    | InputBlockingSkill Int
+    | InputBlockingDefense Int
 
 
 update : Msg -> Model -> Shared.Model -> ( Model, Cmd Msg )
@@ -74,6 +83,15 @@ update msg model _ =
         InputDistanceAttack value ->
             ( { model | distanceAttack = value }, Cmd.none )
 
+        InputBlockingFightStance value ->
+            ( { model | blockingFightStance = value }, Cmd.none )
+
+        InputBlockingSkill value ->
+            ( { model | blockingSkill = value }, Cmd.none )
+
+        InputBlockingDefense value ->
+            ( { model | blockingDefense = value }, Cmd.none )
+
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
@@ -89,11 +107,31 @@ view model shared =
 
 view_ : Model -> Shared.Model -> E.Element Msg
 view_ model _ =
-    E.column [ E.centerX, E.paddingEach { edges | top = 128 } ]
-        [ E.row []
+    E.column
+        [ E.centerX
+        , E.padding 32
+        ]
+        [ E.el [ EF.bold, EF.size 30, E.centerX ] (E.text "Medivia Novus Calculator")
+        , E.link
+            [ EF.bold
+            , EF.size 12
+            , EF.color Theme.red
+            , EF.underline
+            , E.centerX
+            , E.htmlAttribute (HA.target "_blank")
+            ]
+            { url = "https://medivia.online/community/character/ga%20bi"
+            , label = E.text "by Ga bi"
+            }
+        , Theme.spaceY 32
+        , E.row []
             [ viewMeleeDamage model
-            , Theme.spaceX 16
+            , Theme.spaceX 32
             , viewDistanceDamage model
+            ]
+        , Theme.spaceY 32
+        , E.row []
+            [ viewMaxBlockingDamage model
             ]
         ]
 
@@ -228,6 +266,68 @@ viewDistanceDamage model =
         ]
 
 
+viewMaxBlockingDamage : Model -> E.Element Msg
+viewMaxBlockingDamage model =
+    E.column
+        [ E.width (E.px 400)
+        , E.height (E.px 430)
+        , E.padding 16
+        , EBO.width 1
+        , EBO.rounded 4
+        ]
+        [ E.el [ EF.bold, EF.size 24, E.centerX ] (E.text "Blocking Damage")
+        , E.el [ EF.bold, EF.size 12, EF.color Theme.red, E.centerX ] (E.text "Alpha")
+        , EI.radioRow [ E.spacing 8 ]
+            { onChange = InputBlockingFightStance
+            , options =
+                [ EI.option FightStanceOffensive (E.text "Offensive")
+                , EI.option FightStanceBalanced (E.text "Balanced")
+                , EI.option FightStanceDefensive (E.text "Deffensive")
+                ]
+            , selected = Just model.blockingFightStance
+            , label = EI.labelAbove [ E.paddingEach { edges | bottom = 8 } ] (E.text "Stance")
+            }
+        , Theme.spaceY 12
+        , EI.text [ E.width E.fill ]
+            { onChange = String.toInt >> Maybe.withDefault 10 >> InputBlockingSkill
+            , text = String.fromInt model.blockingSkill
+            , placeholder = Nothing
+            , label = EI.labelAbove [] (E.text "Blocking Skill")
+            }
+        , Theme.spaceY 12
+        , EI.text [ E.width E.fill ]
+            { onChange = String.toInt >> Maybe.withDefault 10 >> InputBlockingDefense
+            , text = String.fromInt model.blockingDefense
+            , placeholder = Nothing
+            , label = EI.labelAbove [] (E.text "Shield Defense")
+            }
+        , let
+            maxDmgBlocked : Float
+            maxDmgBlocked =
+                maxDamageBlocked
+                    { skill = model.blockingSkill
+                    , defense = model.blockingDefense
+                    , stance = model.blockingFightStance
+                    }
+          in
+          E.column [ E.paddingEach { edges | top = 12 }, E.spacing 8 ]
+            [ E.row [ E.spacing 8 ]
+                [ E.el [ EF.bold ] (E.text "Min:")
+                , E.text "0"
+                , E.el [ EF.size 12, E.moveDown 1 ] (E.text "(never changes)")
+                ]
+            , E.row [ E.spacing 8 ]
+                [ E.el [ EF.bold ] (E.text "Max:")
+                , viewFloat maxDmgBlocked
+                ]
+            , E.row [ E.spacing 8 ]
+                [ E.el [ EF.bold ] (E.text "Avg:")
+                , viewFloat (maxDmgBlocked / 2)
+                ]
+            ]
+        ]
+
+
 
 -- Calculators
 
@@ -292,6 +392,24 @@ distanceDamage { level, stance, skill, attack } =
     { min = Basics.min min max
     , max = Basics.max min max
     }
+
+
+maxDamageBlocked : { skill : Int, defense : Int, stance : FightStance } -> Float
+maxDamageBlocked { skill, defense, stance } =
+    let
+        defenseFactor : Float
+        defenseFactor =
+            case stance of
+                FightStanceOffensive ->
+                    0.5
+
+                FightStanceBalanced ->
+                    0.7
+
+                FightStanceDefensive ->
+                    1
+    in
+    toFloat defense * toFloat skill ^ (6 / 5) * defenseFactor * 0.05 + 10
 
 
 
