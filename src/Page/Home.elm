@@ -24,6 +24,19 @@ type alias Model =
     , blockingSkill : Int
     , blockingDefense : Int
     , totalArmor : Int
+    , worldType : WorldType
+    , skillDistanceFrom : Int
+    , skillDistanceTo : Int
+    , skillDistancePercentToGo : Int
+    , skillMeleeFrom : Int
+    , skillMeleeTo : Int
+    , skillMeleePercentToGo : Int
+    , skillBlockingFrom : Int
+    , skillBlockingTo : Int
+    , skillBlockingPercentToGo : Int
+    , magicLevelFrom : Int
+    , magicLevelTo : Int
+    , magicLevelPercentToGo : Int
     }
 
 
@@ -43,9 +56,27 @@ init =
       , blockingSkill = 10
       , blockingDefense = 10
       , totalArmor = 25
+      , worldType = WorldTypeFast
+      , skillDistanceFrom = 10
+      , skillDistanceTo = 11
+      , skillDistancePercentToGo = 10000
+      , skillMeleeFrom = 10
+      , skillMeleeTo = 11
+      , skillMeleePercentToGo = 10000
+      , skillBlockingFrom = 10
+      , skillBlockingTo = 11
+      , skillBlockingPercentToGo = 10000
+      , magicLevelFrom = 0
+      , magicLevelTo = 5
+      , magicLevelPercentToGo = 10000
       }
     , Cmd.none
     )
+
+
+type WorldType
+    = WorldTypeSlow
+    | WorldTypeFast
 
 
 type Msg
@@ -63,6 +94,19 @@ type Msg
     | InputBlockingSkill Int
     | InputBlockingDefense Int
     | InputTotalArmor Int
+    | InputWorldType WorldType
+    | InputSkillDistanceFrom Int
+    | InputSkillDistanceTo Int
+    | InputSkillDistancePercentToGo Int
+    | InputSkillMeleeFrom Int
+    | InputSkillMeleeTo Int
+    | InputSkillMeleePercentToGo Int
+    | InputSkillBlockingFrom Int
+    | InputSkillBlockingTo Int
+    | InputSkillBlockingPercentToGo Int
+    | InputMagicLevelFrom Int
+    | InputMagicLevelTo Int
+    | InputMagicLevelPercentToGo Int
 
 
 update : Msg -> Model -> Shared.Model -> ( Model, Cmd Msg )
@@ -110,6 +154,45 @@ update msg model _ =
         InputTotalArmor value ->
             ( { model | totalArmor = value }, Cmd.none )
 
+        InputWorldType value ->
+            ( { model | worldType = value }, Cmd.none )
+
+        InputSkillDistanceFrom value ->
+            ( { model | skillDistanceFrom = value }, Cmd.none )
+
+        InputSkillDistanceTo value ->
+            ( { model | skillDistanceTo = value }, Cmd.none )
+
+        InputSkillDistancePercentToGo value ->
+            ( { model | skillDistancePercentToGo = max 0 (min 10000 value) }, Cmd.none )
+
+        InputSkillMeleeFrom value ->
+            ( { model | skillMeleeFrom = value }, Cmd.none )
+
+        InputSkillMeleeTo value ->
+            ( { model | skillMeleeTo = value }, Cmd.none )
+
+        InputSkillMeleePercentToGo value ->
+            ( { model | skillMeleePercentToGo = max 0 (min 10000 value) }, Cmd.none )
+
+        InputSkillBlockingFrom value ->
+            ( { model | skillBlockingFrom = value }, Cmd.none )
+
+        InputSkillBlockingTo value ->
+            ( { model | skillBlockingTo = value }, Cmd.none )
+
+        InputSkillBlockingPercentToGo value ->
+            ( { model | skillBlockingPercentToGo = max 0 (min 10000 value) }, Cmd.none )
+
+        InputMagicLevelFrom value ->
+            ( { model | magicLevelFrom = value }, Cmd.none )
+
+        InputMagicLevelTo value ->
+            ( { model | magicLevelTo = value }, Cmd.none )
+
+        InputMagicLevelPercentToGo value ->
+            ( { model | magicLevelPercentToGo = max 0 (min 10000 value) }, Cmd.none )
+
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
@@ -142,16 +225,39 @@ view_ model _ =
             , label = E.text "by Ga bi"
             }
         , Theme.spaceY 32
-        , E.row []
+        , E.el [ EF.bold, EF.size 26, E.centerX ] (E.text "Damage")
+        , Theme.spaceY 16
+        , E.wrappedRow [ E.spacing 32 ]
             [ viewMeleeDamage model
-            , Theme.spaceX 32
             , viewDistanceDamage model
             ]
         , Theme.spaceY 32
-        , E.row []
+        , E.wrappedRow [ E.spacing 32 ]
             [ viewMaxBlockingDamage model
-            , Theme.spaceX 32
             , viewArmorReducingDamage model
+            ]
+        , Theme.spaceY 32
+        , E.el [ EF.bold, EF.size 26, E.centerX ] (E.text "Skills")
+        , Theme.spaceY 16
+        , E.column [ E.centerX ]
+            [ EI.radioRow [ E.spacing 8 ]
+                { onChange = InputWorldType
+                , options =
+                    [ EI.option WorldTypeSlow (E.text "1x skills and ML")
+                    , EI.option WorldTypeFast (E.text "4x skills, 3x ML, 2x regen")
+                    ]
+                , selected = Just model.worldType
+                , label = EI.labelHidden "world type"
+                }
+            ]
+        , Theme.spaceY 16
+        , E.wrappedRow [ E.spacing 32 ]
+            [ viewMeleeSkillCalculator model
+            , viewDistanceSkillCalculator model
+            ]
+        , Theme.spaceY 32
+        , E.wrappedRow [ E.spacing 32 ]
+            [ viewMagicLevelCalculator model
             ]
         ]
 
@@ -306,7 +412,7 @@ viewMaxBlockingDamage : Model -> E.Element Msg
 viewMaxBlockingDamage model =
     E.column
         [ E.width (E.px 400)
-        , E.height (E.px 430)
+        , E.height (E.px 374)
         , E.padding 16
         , EBO.width 1
         , EBO.rounded 4
@@ -368,7 +474,7 @@ viewArmorReducingDamage : Model -> E.Element Msg
 viewArmorReducingDamage model =
     E.column
         [ E.width (E.px 400)
-        , E.height (E.px 430)
+        , E.height (E.px 374)
         , E.padding 16
         , EBO.width 1
         , EBO.rounded 4
@@ -404,8 +510,206 @@ viewArmorReducingDamage model =
         ]
 
 
+viewMeleeSkillCalculator : Model -> E.Element Msg
+viewMeleeSkillCalculator model =
+    E.column
+        [ E.width (E.px 400)
+        , E.height (E.px 390)
+        , E.padding 16
+        , EBO.width 1
+        , EBO.rounded 4
+        ]
+        [ E.el [ EF.bold, EF.size 24, E.centerX ] (E.text "Melee Skill")
+        , E.el [ EF.bold, EF.size 12, EF.color Theme.red, E.centerX ] (E.text "Alpha")
+        , Theme.spaceY 12
+        , EI.text [ E.width E.fill ]
+            { onChange = String.toInt >> Maybe.withDefault 10 >> InputSkillMeleeFrom
+            , text = String.fromInt model.skillMeleeFrom
+            , placeholder = Nothing
+            , label = EI.labelAbove [] (E.text "From")
+            }
+        , Theme.spaceY 12
+        , EI.text [ E.width E.fill ]
+            { onChange = String.toInt >> Maybe.withDefault 20 >> InputSkillMeleeTo
+            , text = String.fromInt model.skillMeleeTo
+            , placeholder = Nothing
+            , label = EI.labelAbove [] (E.text "To")
+            }
+        , Theme.spaceY 12
+        , EI.text [ E.width E.fill ]
+            { onChange = String.toInt >> Maybe.withDefault 20 >> InputSkillMeleePercentToGo
+            , text = String.fromInt model.skillMeleePercentToGo
+            , placeholder = Nothing
+            , label = EI.labelAbove [] (E.text "% To Go")
+            }
+        , Theme.spaceY 12
+        , let
+            tries : Float
+            tries =
+                meleeSkillTries
+                    { from = model.skillMeleeFrom
+                    , to = model.skillMeleeTo
+                    , toGo = model.skillMeleePercentToGo
+                    , worldType = model.worldType
+                    }
 
--- Calculators
+            minutes : Int
+            minutes =
+                ceiling (tries / 30)
+          in
+          E.column [ E.paddingEach { edges | top = 12 }, E.spacing 8 ]
+            [ E.row [ E.spacing 8 ]
+                [ E.el [ EF.bold ] (E.text "Tries:")
+                , E.text (String.fromFloat tries)
+                ]
+            , E.row [ E.spacing 8 ]
+                [ E.el [ EF.bold ] (E.text "Time:")
+                , E.row [ E.spacing 2 ]
+                    [ E.text (String.fromInt (minutes // 60))
+                    , E.el [ EF.size 14, E.alignBottom ] (E.text "h")
+                    , E.text (String.fromInt (minutes |> modBy 60))
+                    , E.el [ EF.size 14, E.alignBottom ] (E.text "m")
+                    ]
+                ]
+            ]
+        ]
+
+
+viewDistanceSkillCalculator : Model -> E.Element Msg
+viewDistanceSkillCalculator model =
+    E.column
+        [ E.width (E.px 400)
+        , E.height (E.px 390)
+        , E.padding 16
+        , EBO.width 1
+        , EBO.rounded 4
+        ]
+        [ E.el [ EF.bold, EF.size 24, E.centerX ] (E.text "Distance Skill")
+        , E.el [ EF.bold, EF.size 12, EF.color Theme.red, E.centerX ] (E.text "Alpha")
+        , Theme.spaceY 12
+        , EI.text [ E.width E.fill ]
+            { onChange = String.toInt >> Maybe.withDefault 10 >> InputSkillDistanceFrom
+            , text = String.fromInt model.skillDistanceFrom
+            , placeholder = Nothing
+            , label = EI.labelAbove [] (E.text "From")
+            }
+        , Theme.spaceY 12
+        , EI.text [ E.width E.fill ]
+            { onChange = String.toInt >> Maybe.withDefault 20 >> InputSkillDistanceTo
+            , text = String.fromInt model.skillDistanceTo
+            , placeholder = Nothing
+            , label = EI.labelAbove [] (E.text "To")
+            }
+        , Theme.spaceY 12
+        , EI.text [ E.width E.fill ]
+            { onChange = String.toInt >> Maybe.withDefault 20 >> InputSkillDistancePercentToGo
+            , text = String.fromInt model.skillDistancePercentToGo
+            , placeholder = Nothing
+            , label = EI.labelAbove [] (E.text "% To Go")
+            }
+        , Theme.spaceY 12
+        , let
+            tries : Float
+            tries =
+                distanceSkillTries
+                    { from = model.skillDistanceFrom
+                    , to = model.skillDistanceTo
+                    , toGo = model.skillDistancePercentToGo
+                    , worldType = model.worldType
+                    }
+
+            minutes : Int
+            minutes =
+                ceiling (tries / 30)
+          in
+          E.column [ E.paddingEach { edges | top = 12 }, E.spacing 8 ]
+            [ E.row [ E.spacing 8 ]
+                [ E.el [ EF.bold ] (E.text "Tries:")
+                , E.text (String.fromFloat tries)
+                ]
+            , E.row [ E.spacing 8 ]
+                [ E.el [ EF.bold ] (E.text "Time:")
+                , E.row [ E.spacing 2 ]
+                    [ E.text (String.fromInt (minutes // 60))
+                    , E.el [ EF.size 14, E.alignBottom ] (E.text "h")
+                    , E.text (String.fromInt (minutes |> modBy 60))
+                    , E.el [ EF.size 14, E.alignBottom ] (E.text "m")
+                    ]
+                ]
+            ]
+        ]
+
+
+viewMagicLevelCalculator : Model -> E.Element Msg
+viewMagicLevelCalculator model =
+    E.column
+        [ E.width (E.px 400)
+        , E.height (E.px 390)
+        , E.padding 16
+        , EBO.width 1
+        , EBO.rounded 4
+        ]
+        [ E.el [ EF.bold, EF.size 24, E.centerX ] (E.text "Magic Level")
+        , E.el [ EF.bold, EF.size 12, EF.color Theme.red, E.centerX ] (E.text "Alpha")
+        , Theme.spaceY 12
+        , EI.text [ E.width E.fill ]
+            { onChange = String.toInt >> Maybe.withDefault 10 >> InputMagicLevelFrom
+            , text = String.fromInt model.magicLevelFrom
+            , placeholder = Nothing
+            , label = EI.labelAbove [] (E.text "From")
+            }
+        , Theme.spaceY 12
+        , EI.text [ E.width E.fill ]
+            { onChange = String.toInt >> Maybe.withDefault 20 >> InputMagicLevelTo
+            , text = String.fromInt model.magicLevelTo
+            , placeholder = Nothing
+            , label = EI.labelAbove [] (E.text "To")
+            }
+        , Theme.spaceY 12
+        , EI.text [ E.width E.fill ]
+            { onChange = String.toInt >> Maybe.withDefault 10000 >> InputMagicLevelPercentToGo
+            , text = String.fromInt model.magicLevelPercentToGo
+            , placeholder = Nothing
+            , label = EI.labelAbove [] (E.text "% To Go")
+            }
+        , Theme.spaceY 12
+        , let
+            mana : Float
+            mana =
+                manaRequiredToMagicLevel
+                    { from = model.magicLevelFrom
+                    , to = model.magicLevelTo
+                    , toGo = model.magicLevelPercentToGo
+                    , worldType = model.worldType
+                    }
+
+            minutes : Int
+            minutes =
+                manaToMinutes
+                    { mana = ceiling mana
+                    , worldType = model.worldType
+                    }
+          in
+          E.column [ E.paddingEach { edges | top = 12 }, E.spacing 8 ]
+            [ E.row [ E.spacing 8 ]
+                [ E.el [ EF.bold ] (E.text "Mana:")
+                , E.text (String.fromInt (ceiling mana))
+                ]
+            , E.row [ E.spacing 8 ]
+                [ E.el [ EF.bold ] (E.text "Time:")
+                , E.row [ E.spacing 2 ]
+                    [ E.text (String.fromInt (minutes // 60))
+                    , E.el [ EF.size 14, E.alignBottom ] (E.text "h")
+                    , E.text (String.fromInt (minutes |> modBy 60))
+                    , E.el [ EF.size 14, E.alignBottom ] (E.text "m")
+                    ]
+                ]
+            ]
+        ]
+
+
+
+-- Damage Calculators
 
 
 type FightStance
@@ -510,7 +814,125 @@ reducedArmorDamage { totalArmor } =
 
 
 
--- Helpers
+-- skill Calculators
+
+
+meleeSkillTries : { from : Int, to : Int, toGo : Int, worldType : WorldType } -> Float
+meleeSkillTries { from, to, toGo, worldType } =
+    let
+        modifier : Int
+        modifier =
+            case worldType of
+                WorldTypeSlow ->
+                    1
+
+                WorldTypeFast ->
+                    4
+    in
+    List.range (from + 1) to
+        |> List.indexedMap Tuple.pair
+        |> List.foldl
+            (\( index, skill ) acc ->
+                if index == 0 then
+                    meleeSkillTriesHelper skill
+                        * (toFloat toGo / 10000)
+
+                else
+                    acc + meleeSkillTriesHelper skill
+            )
+            0
+        |> (\v -> v / toFloat modifier)
+
+
+meleeSkillTriesHelper : Int -> Float
+meleeSkillTriesHelper skill =
+    if skill <= 10 then
+        0.0
+
+    else
+        12.5 * 2 ^ toFloat (skill - 10)
+
+
+distanceSkillTries : { from : Int, to : Int, toGo : Int, worldType : WorldType } -> Float
+distanceSkillTries { from, to, toGo, worldType } =
+    let
+        modifier : Int
+        modifier =
+            case worldType of
+                WorldTypeSlow ->
+                    1
+
+                WorldTypeFast ->
+                    4
+    in
+    List.range (from + 1) to
+        |> List.indexedMap Tuple.pair
+        |> List.foldl
+            (\( index, skill ) acc ->
+                if index == 0 then
+                    distanceSkillTriesHelper skill
+                        * (toFloat toGo / 10000)
+
+                else
+                    acc + distanceSkillTriesHelper skill
+            )
+            0
+        |> (\v -> v / toFloat modifier)
+
+
+distanceSkillTriesHelper : Int -> Float
+distanceSkillTriesHelper skill =
+    if skill <= 10 then
+        0.0
+
+    else
+        3.125 * 2 ^ toFloat (skill - 10)
+
+
+manaRequiredToMagicLevel : { from : Int, to : Int, toGo : Int, worldType : WorldType } -> Float
+manaRequiredToMagicLevel { from, to, toGo, worldType } =
+    let
+        modifier : Int
+        modifier =
+            case worldType of
+                WorldTypeSlow ->
+                    1
+
+                WorldTypeFast ->
+                    3
+    in
+    List.range (from + 1) to
+        |> List.indexedMap Tuple.pair
+        |> List.foldl
+            (\( index, magicLevel ) acc ->
+                if index == 0 then
+                    manaRequiredToMagicLevelHelper magicLevel
+                        * (toFloat toGo / 100 / 100)
+
+                else
+                    acc + manaRequiredToMagicLevelHelper magicLevel
+            )
+            0
+        |> (\v -> v / toFloat modifier)
+
+
+manaRequiredToMagicLevelHelper : Int -> Float
+manaRequiredToMagicLevelHelper magicLevel =
+    if magicLevel <= 0 then
+        0
+
+    else
+        80 * 5 ^ toFloat (magicLevel - 0)
+
+
+manaToMinutes : { mana : Int, worldType : WorldType } -> Int
+manaToMinutes { mana, worldType } =
+    case worldType of
+        WorldTypeSlow ->
+            ceiling (toFloat mana * 3 / 60)
+
+        WorldTypeFast ->
+            ceiling (toFloat mana * 1.5 / 60)
 
 
 viewFloat : Float -> E.Element msg
