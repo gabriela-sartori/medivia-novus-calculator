@@ -14,10 +14,12 @@ type alias Model =
     , meleeLevel : Int
     , meleeSkill : Int
     , meleeAttack : Int
+    , meleeStrength : Int
     , distanceFightStance : FightStance
     , distanceLevel : Int
     , distanceSkill : Int
     , distanceAttack : Int
+    , distanceDexterity : Int
     , blockingFightStance : FightStance
     , blockingSkill : Int
     , blockingDefense : Int
@@ -31,10 +33,12 @@ init =
       , meleeLevel = 1
       , meleeSkill = 10
       , meleeAttack = 10
+      , meleeStrength = 0
       , distanceFightStance = FightStanceOffensive
       , distanceLevel = 1
       , distanceSkill = 10
       , distanceAttack = 10
+      , distanceDexterity = 0
       , blockingFightStance = FightStanceDefensive
       , blockingSkill = 10
       , blockingDefense = 10
@@ -49,10 +53,12 @@ type Msg
     | InputMeleeLevel Int
     | InputMeleeSkill Int
     | InputMeleeAttack Int
+    | InputMeleeStrength Int
     | InputDistanceFightStance FightStance
     | InputDistanceLevel Int
     | InputDistanceSkill Int
     | InputDistanceAttack Int
+    | InputDistanceDexterity Int
     | InputBlockingFightStance FightStance
     | InputBlockingSkill Int
     | InputBlockingDefense Int
@@ -74,6 +80,9 @@ update msg model _ =
         InputMeleeAttack value ->
             ( { model | meleeAttack = value }, Cmd.none )
 
+        InputMeleeStrength value ->
+            ( { model | meleeStrength = value }, Cmd.none )
+
         InputDistanceFightStance stance ->
             ( { model | distanceFightStance = stance }, Cmd.none )
 
@@ -85,6 +94,9 @@ update msg model _ =
 
         InputDistanceAttack value ->
             ( { model | distanceAttack = value }, Cmd.none )
+
+        InputDistanceDexterity value ->
+            ( { model | distanceDexterity = value }, Cmd.none )
 
         InputBlockingFightStance value ->
             ( { model | blockingFightStance = value }, Cmd.none )
@@ -148,7 +160,7 @@ viewMeleeDamage : Model -> E.Element Msg
 viewMeleeDamage model =
     E.column
         [ E.width (E.px 400)
-        , E.height (E.px 430)
+        , E.height (E.px 510)
         , E.padding 16
         , EBO.width 1
         , EBO.rounded 4
@@ -186,6 +198,13 @@ viewMeleeDamage model =
             , placeholder = Nothing
             , label = EI.labelAbove [] (E.text "Attack")
             }
+        , Theme.spaceY 12
+        , EI.text [ E.width E.fill ]
+            { onChange = String.toInt >> Maybe.withDefault 0 >> InputMeleeStrength
+            , text = String.fromInt model.meleeStrength
+            , placeholder = Nothing
+            , label = EI.labelAbove [] (E.text "Strength")
+            }
         , let
             damageRange : { min : Float, max : Float }
             damageRange =
@@ -194,6 +213,7 @@ viewMeleeDamage model =
                     , skill = model.meleeSkill
                     , attack = model.meleeAttack
                     , stance = model.meleeFightStance
+                    , strength = model.meleeStrength
                     }
           in
           E.column [ E.paddingEach { edges | top = 12 }, E.spacing 8 ]
@@ -213,7 +233,7 @@ viewDistanceDamage : Model -> E.Element Msg
 viewDistanceDamage model =
     E.column
         [ E.width (E.px 400)
-        , E.height (E.px 430)
+        , E.height (E.px 510)
         , E.padding 16
         , EBO.width 1
         , EBO.rounded 4
@@ -251,6 +271,13 @@ viewDistanceDamage model =
             , placeholder = Nothing
             , label = EI.labelAbove [] (E.text "Attack")
             }
+        , Theme.spaceY 12
+        , EI.text [ E.width E.fill ]
+            { onChange = String.toInt >> Maybe.withDefault 0 >> InputDistanceDexterity
+            , text = String.fromInt model.distanceDexterity
+            , placeholder = Nothing
+            , label = EI.labelAbove [] (E.text "Dexterity")
+            }
         , let
             damageRange : { min : Float, max : Float }
             damageRange =
@@ -259,6 +286,7 @@ viewDistanceDamage model =
                     , skill = model.distanceSkill
                     , attack = model.distanceAttack
                     , stance = model.distanceFightStance
+                    , dexterity = model.distanceDexterity
                     }
           in
           E.column [ E.paddingEach { edges | top = 12 }, E.spacing 8 ]
@@ -386,8 +414,15 @@ type FightStance
     | FightStanceDefensive
 
 
-meleeDamage : { level : Int, skill : Int, attack : Int, stance : FightStance } -> { min : Float, max : Float }
-meleeDamage { level, stance, skill, attack } =
+meleeDamage :
+    { level : Int
+    , skill : Int
+    , attack : Int
+    , stance : FightStance
+    , strength : Int
+    }
+    -> { min : Float, max : Float }
+meleeDamage { level, stance, skill, attack, strength } =
     let
         attackFactor : Float
         attackFactor =
@@ -403,19 +438,26 @@ meleeDamage { level, stance, skill, attack } =
 
         max : Float
         max =
-            25.0 + (toFloat skill ^ 2.0) / 1550.0 * toFloat attack / attackFactor
+            (25.0 + (toFloat skill ^ 2.0) / 1550.0 * toFloat attack / attackFactor) + toFloat strength * 0.35
 
         min : Float
         min =
-            toFloat level / 4 + (max * 0.15)
+            toFloat level / 4 + (max * 0.15) + toFloat strength * 0.3
     in
     { min = Basics.min min max
     , max = Basics.max min max
     }
 
 
-distanceDamage : { level : Int, skill : Int, attack : Int, stance : FightStance } -> { min : Float, max : Float }
-distanceDamage { level, stance, skill, attack } =
+distanceDamage :
+    { level : Int
+    , skill : Int
+    , attack : Int
+    , stance : FightStance
+    , dexterity : Int
+    }
+    -> { min : Float, max : Float }
+distanceDamage { level, stance, skill, attack, dexterity } =
     let
         attackFactor : Float
         attackFactor =
@@ -431,11 +473,11 @@ distanceDamage { level, stance, skill, attack } =
 
         max : Float
         max =
-            20 + toFloat skill ^ 2 / 1600 * toFloat attack / attackFactor
+            (20 + toFloat skill ^ 2 / 1600 * toFloat attack / attackFactor) + toFloat dexterity * 1.2
 
         min : Float
         min =
-            toFloat level / 5 + (max * 0.2)
+            (toFloat level / 5 + (max * 0.2)) + toFloat dexterity * 0.8
     in
     { min = Basics.min min max
     , max = Basics.max min max
