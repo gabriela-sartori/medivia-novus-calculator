@@ -257,7 +257,8 @@ view_ model _ =
             ]
         , Theme.spaceY 32
         , E.wrappedRow [ E.spacing 32 ]
-            [ viewMagicLevelCalculator model
+            [ viewBlockingSkillCalculator model
+            , viewMagicLevelCalculator model
             ]
         ]
 
@@ -640,11 +641,89 @@ viewDistanceSkillCalculator model =
         ]
 
 
+viewBlockingSkillCalculator : Model -> E.Element Msg
+viewBlockingSkillCalculator model =
+    E.column
+        [ E.width (E.px 400)
+        , E.height (E.px 416)
+        , E.padding 16
+        , EBO.width 1
+        , EBO.rounded 4
+        ]
+        [ E.el [ EF.bold, EF.size 24, E.centerX ] (E.text "Blocking Skill")
+        , E.el [ EF.bold, EF.size 12, EF.color Theme.red, E.centerX ] (E.text "Alpha")
+        , Theme.spaceY 12
+        , EI.text [ E.width E.fill ]
+            { onChange = String.toInt >> Maybe.withDefault 10 >> InputSkillBlockingFrom
+            , text = String.fromInt model.skillBlockingFrom
+            , placeholder = Nothing
+            , label = EI.labelAbove [] (E.text "From")
+            }
+        , Theme.spaceY 12
+        , EI.text [ E.width E.fill ]
+            { onChange = String.toInt >> Maybe.withDefault 20 >> InputSkillBlockingTo
+            , text = String.fromInt model.skillBlockingTo
+            , placeholder = Nothing
+            , label = EI.labelAbove [] (E.text "To")
+            }
+        , Theme.spaceY 12
+        , EI.text [ E.width E.fill ]
+            { onChange = String.toInt >> Maybe.withDefault 20 >> InputSkillBlockingPercentToGo
+            , text = String.fromInt model.skillBlockingPercentToGo
+            , placeholder = Nothing
+            , label = EI.labelAbove [] (E.text "% To Go")
+            }
+        , Theme.spaceY 12
+        , let
+            tries : Float
+            tries =
+                blockingSkillTries
+                    { from = model.skillBlockingFrom
+                    , to = model.skillBlockingTo
+                    , toGo = model.skillBlockingPercentToGo
+                    , worldType = model.worldType
+                    }
+
+            minutes : Int
+            minutes =
+                ceiling (tries / 30)
+
+            minutes2x : Int
+            minutes2x =
+                ceiling (tries / 30 / 2)
+          in
+          E.column [ E.paddingEach { edges | top = 12 }, E.spacing 8 ]
+            [ E.row [ E.spacing 8 ]
+                [ E.el [ EF.bold ] (E.text "Tries:")
+                , E.text (String.fromFloat tries)
+                ]
+            , E.row [ E.spacing 8 ]
+                [ E.el [ EF.bold ] (E.text "Time:")
+                , E.row [ E.spacing 2 ]
+                    [ E.text (String.fromInt (minutes // 60))
+                    , E.el [ EF.size 14, E.alignBottom ] (E.text "h")
+                    , E.text (String.fromInt (minutes |> modBy 60))
+                    , E.el [ EF.size 14, E.alignBottom ] (E.text "m")
+                    ]
+                ]
+            , E.row [ E.spacing 8 ]
+                [ E.el [ EF.bold ] (E.text "2x Time:")
+                , E.row [ E.spacing 2 ]
+                    [ E.text (String.fromInt (minutes2x // 60))
+                    , E.el [ EF.size 14, E.alignBottom ] (E.text "h")
+                    , E.text (String.fromInt (minutes2x |> modBy 60))
+                    , E.el [ EF.size 14, E.alignBottom ] (E.text "m")
+                    ]
+                ]
+            ]
+        ]
+
+
 viewMagicLevelCalculator : Model -> E.Element Msg
 viewMagicLevelCalculator model =
     E.column
         [ E.width (E.px 400)
-        , E.height (E.px 390)
+        , E.height (E.px 416)
         , E.padding 16
         , EBO.width 1
         , EBO.rounded 4
@@ -887,6 +966,42 @@ distanceSkillTriesHelper skill =
 
     else
         3.125 * 2 ^ toFloat (skill - 10)
+
+
+blockingSkillTries : { from : Int, to : Int, toGo : Int, worldType : WorldType } -> Float
+blockingSkillTries { from, to, toGo, worldType } =
+    let
+        modifier : Int
+        modifier =
+            case worldType of
+                WorldTypeSlow ->
+                    1
+
+                WorldTypeFast ->
+                    4
+    in
+    List.range (from + 1) to
+        |> List.indexedMap Tuple.pair
+        |> List.foldl
+            (\( index, skill ) acc ->
+                if index == 0 then
+                    blockingSkillTriesHelper skill
+                        * (toFloat toGo / 10000)
+
+                else
+                    acc + blockingSkillTriesHelper skill
+            )
+            0
+        |> (\v -> v / toFloat modifier)
+
+
+blockingSkillTriesHelper : Int -> Float
+blockingSkillTriesHelper skill =
+    if skill <= 10 then
+        0.0
+
+    else
+        33.333 * 1.5 ^ toFloat (skill - 10)
 
 
 manaRequiredToMagicLevel : { from : Int, to : Int, toGo : Int, worldType : WorldType } -> Float
