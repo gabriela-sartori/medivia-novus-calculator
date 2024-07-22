@@ -11,64 +11,64 @@ import Theme exposing (edges)
 
 type alias Model =
     { meleeFightStance : FightStance
-    , meleeLevel : Int
-    , meleeSkill : Int
-    , meleeAttack : Int
-    , meleeStrength : Int
+    , meleeLevel : String
+    , meleeSkill : String
+    , meleeAttack : String
+    , meleeStrength : String
     , distanceFightStance : FightStance
-    , distanceLevel : Int
-    , distanceSkill : Int
-    , distanceAttack : Int
-    , distanceDexterity : Int
+    , distanceLevel : String
+    , distanceSkill : String
+    , distanceAttack : String
+    , distanceDexterity : String
     , blockingFightStance : FightStance
-    , blockingSkill : Int
-    , blockingDefense : Int
-    , totalArmor : Int
+    , blockingSkill : String
+    , blockingDefense : String
+    , totalArmor : String
     , worldType : WorldType
-    , skillDistanceFrom : Int
-    , skillDistanceTo : Int
-    , skillDistancePercentToGo : Int
-    , skillMeleeFrom : Int
-    , skillMeleeTo : Int
-    , skillMeleePercentToGo : Int
-    , skillBlockingFrom : Int
-    , skillBlockingTo : Int
-    , skillBlockingPercentToGo : Int
-    , magicLevelFrom : Int
-    , magicLevelTo : Int
-    , magicLevelPercentToGo : Int
+    , skillDistanceFrom : String
+    , skillDistanceTo : String
+    , skillDistancePercentToGo : String
+    , skillMeleeFrom : String
+    , skillMeleeTo : String
+    , skillMeleePercentToGo : String
+    , skillBlockingFrom : String
+    , skillBlockingTo : String
+    , skillBlockingPercentToGo : String
+    , magicLevelFrom : String
+    , magicLevelTo : String
+    , magicLevelPercentToGo : String
     }
 
 
 init : ( Model, Cmd Msg )
 init =
     ( { meleeFightStance = FightStanceOffensive
-      , meleeLevel = 1
-      , meleeSkill = 10
-      , meleeAttack = 10
-      , meleeStrength = 0
+      , meleeLevel = "1"
+      , meleeSkill = "10"
+      , meleeAttack = "10"
+      , meleeStrength = "0"
       , distanceFightStance = FightStanceOffensive
-      , distanceLevel = 1
-      , distanceSkill = 10
-      , distanceAttack = 10
-      , distanceDexterity = 0
+      , distanceLevel = "1"
+      , distanceSkill = "10"
+      , distanceAttack = "10"
+      , distanceDexterity = "0"
       , blockingFightStance = FightStanceDefensive
-      , blockingSkill = 10
-      , blockingDefense = 10
-      , totalArmor = 25
+      , blockingSkill = "10"
+      , blockingDefense = "10"
+      , totalArmor = "25"
       , worldType = WorldTypeFast
-      , skillDistanceFrom = 10
-      , skillDistanceTo = 11
-      , skillDistancePercentToGo = 10000
-      , skillMeleeFrom = 10
-      , skillMeleeTo = 11
-      , skillMeleePercentToGo = 10000
-      , skillBlockingFrom = 10
-      , skillBlockingTo = 11
-      , skillBlockingPercentToGo = 10000
-      , magicLevelFrom = 0
-      , magicLevelTo = 5
-      , magicLevelPercentToGo = 10000
+      , skillDistanceFrom = "10"
+      , skillDistanceTo = "11"
+      , skillDistancePercentToGo = "10000"
+      , skillMeleeFrom = "10"
+      , skillMeleeTo = "11"
+      , skillMeleePercentToGo = "10000"
+      , skillBlockingFrom = "10"
+      , skillBlockingTo = "11"
+      , skillBlockingPercentToGo = "10000"
+      , magicLevelFrom = "0"
+      , magicLevelTo = "5"
+      , magicLevelPercentToGo = "10000"
       }
     , Cmd.none
     )
@@ -81,32 +81,32 @@ type WorldType
 
 type Msg
     = InputMeleeFightStance FightStance
-    | InputMeleeLevel Int
-    | InputMeleeSkill Int
-    | InputMeleeAttack Int
-    | InputMeleeStrength Int
+    | InputMeleeLevel String
+    | InputMeleeSkill String
+    | InputMeleeAttack String
+    | InputMeleeStrength String
     | InputDistanceFightStance FightStance
-    | InputDistanceLevel Int
-    | InputDistanceSkill Int
-    | InputDistanceAttack Int
-    | InputDistanceDexterity Int
+    | InputDistanceLevel String
+    | InputDistanceSkill String
+    | InputDistanceAttack String
+    | InputDistanceDexterity String
     | InputBlockingFightStance FightStance
-    | InputBlockingSkill Int
-    | InputBlockingDefense Int
-    | InputTotalArmor Int
+    | InputBlockingSkill String
+    | InputBlockingDefense String
+    | InputTotalArmor String
     | InputWorldType WorldType
-    | InputSkillDistanceFrom Int
-    | InputSkillDistanceTo Int
-    | InputSkillDistancePercentToGo Int
-    | InputSkillMeleeFrom Int
-    | InputSkillMeleeTo Int
-    | InputSkillMeleePercentToGo Int
-    | InputSkillBlockingFrom Int
-    | InputSkillBlockingTo Int
-    | InputSkillBlockingPercentToGo Int
-    | InputMagicLevelFrom Int
-    | InputMagicLevelTo Int
-    | InputMagicLevelPercentToGo Int
+    | InputSkillDistanceFrom String
+    | InputSkillDistanceTo String
+    | InputSkillDistancePercentToGo String
+    | InputSkillMeleeFrom String
+    | InputSkillMeleeTo String
+    | InputSkillMeleePercentToGo String
+    | InputSkillBlockingFrom String
+    | InputSkillBlockingTo String
+    | InputSkillBlockingPercentToGo String
+    | InputMagicLevelFrom String
+    | InputMagicLevelTo String
+    | InputMagicLevelPercentToGo String
 
 
 update : Msg -> Model -> Shared.Model -> ( Model, Cmd Msg )
@@ -164,7 +164,7 @@ update msg model _ =
             ( { model | skillDistanceTo = value }, Cmd.none )
 
         InputSkillDistancePercentToGo value ->
-            ( { model | skillDistancePercentToGo = max 0 (min 10000 value) }, Cmd.none )
+            ( { model | skillDistancePercentToGo = value }, Cmd.none )
 
         InputSkillMeleeFrom value ->
             ( { model | skillMeleeFrom = value }, Cmd.none )
@@ -173,7 +173,7 @@ update msg model _ =
             ( { model | skillMeleeTo = value }, Cmd.none )
 
         InputSkillMeleePercentToGo value ->
-            ( { model | skillMeleePercentToGo = max 0 (min 10000 value) }, Cmd.none )
+            ( { model | skillMeleePercentToGo = value }, Cmd.none )
 
         InputSkillBlockingFrom value ->
             ( { model | skillBlockingFrom = value }, Cmd.none )
@@ -182,7 +182,7 @@ update msg model _ =
             ( { model | skillBlockingTo = value }, Cmd.none )
 
         InputSkillBlockingPercentToGo value ->
-            ( { model | skillBlockingPercentToGo = max 0 (min 10000 value) }, Cmd.none )
+            ( { model | skillBlockingPercentToGo = value }, Cmd.none )
 
         InputMagicLevelFrom value ->
             ( { model | magicLevelFrom = value }, Cmd.none )
@@ -191,7 +191,7 @@ update msg model _ =
             ( { model | magicLevelTo = value }, Cmd.none )
 
         InputMagicLevelPercentToGo value ->
-            ( { model | magicLevelPercentToGo = max 0 (min 10000 value) }, Cmd.none )
+            ( { model | magicLevelPercentToGo = value }, Cmd.none )
 
 
 subscriptions : Model -> Sub Msg
@@ -337,29 +337,29 @@ viewMeleeDamage model =
             ]
         , Theme.spaceY 12
         , EI.text [ E.width E.fill ]
-            { onChange = String.toInt >> Maybe.withDefault 1 >> InputMeleeLevel
-            , text = String.fromInt model.meleeLevel
+            { onChange = InputMeleeLevel
+            , text = model.meleeLevel
             , placeholder = Nothing
             , label = EI.labelAbove [] (E.text "Level")
             }
         , Theme.spaceY 12
         , EI.text [ E.width E.fill ]
-            { onChange = String.toInt >> Maybe.withDefault 10 >> InputMeleeSkill
-            , text = String.fromInt model.meleeSkill
+            { onChange = InputMeleeSkill
+            , text = model.meleeSkill
             , placeholder = Nothing
             , label = EI.labelAbove [] (E.text "Melee Skill")
             }
         , Theme.spaceY 12
         , EI.text [ E.width E.fill ]
-            { onChange = String.toInt >> Maybe.withDefault 10 >> InputMeleeAttack
-            , text = String.fromInt model.meleeAttack
+            { onChange = InputMeleeAttack
+            , text = model.meleeAttack
             , placeholder = Nothing
             , label = EI.labelAbove [] (E.text "Attack")
             }
         , Theme.spaceY 12
         , EI.text [ E.width E.fill ]
-            { onChange = String.toInt >> Maybe.withDefault 0 >> InputMeleeStrength
-            , text = String.fromInt model.meleeStrength
+            { onChange = InputMeleeStrength
+            , text = model.meleeStrength
             , placeholder = Nothing
             , label = EI.labelAbove [] (E.text "Strength")
             }
@@ -367,11 +367,11 @@ viewMeleeDamage model =
             damageRange : { min : Float, max : Float }
             damageRange =
                 meleeDamage
-                    { level = model.meleeLevel
-                    , skill = model.meleeSkill
-                    , attack = model.meleeAttack
+                    { level = model.meleeLevel |> String.toInt |> Maybe.withDefault 0
+                    , skill = model.meleeSkill |> String.toInt |> Maybe.withDefault 0
+                    , attack = model.meleeAttack |> String.toInt |> Maybe.withDefault 0
                     , stance = model.meleeFightStance
-                    , strength = model.meleeStrength
+                    , strength = model.meleeStrength |> String.toInt |> Maybe.withDefault 0
                     }
           in
           E.column [ E.paddingEach { edges | top = 12 }, E.spacing 8 ]
@@ -408,29 +408,29 @@ viewDistanceDamage model =
             ]
         , Theme.spaceY 12
         , EI.text [ E.width E.fill ]
-            { onChange = String.toInt >> Maybe.withDefault 1 >> InputDistanceLevel
-            , text = String.fromInt model.distanceLevel
+            { onChange = InputDistanceLevel
+            , text = model.distanceLevel
             , placeholder = Nothing
             , label = EI.labelAbove [] (E.text "Level")
             }
         , Theme.spaceY 12
         , EI.text [ E.width E.fill ]
-            { onChange = String.toInt >> Maybe.withDefault 10 >> InputDistanceSkill
-            , text = String.fromInt model.distanceSkill
+            { onChange = InputDistanceSkill
+            , text = model.distanceSkill
             , placeholder = Nothing
             , label = EI.labelAbove [] (E.text "Distance Skill")
             }
         , Theme.spaceY 12
         , EI.text [ E.width E.fill ]
-            { onChange = String.toInt >> Maybe.withDefault 10 >> InputDistanceAttack
-            , text = String.fromInt model.distanceAttack
+            { onChange = InputDistanceAttack
+            , text = model.distanceAttack
             , placeholder = Nothing
             , label = EI.labelAbove [] (E.text "Attack")
             }
         , Theme.spaceY 12
         , EI.text [ E.width E.fill ]
-            { onChange = String.toInt >> Maybe.withDefault 0 >> InputDistanceDexterity
-            , text = String.fromInt model.distanceDexterity
+            { onChange = InputDistanceDexterity
+            , text = model.distanceDexterity
             , placeholder = Nothing
             , label = EI.labelAbove [] (E.text "Dexterity")
             }
@@ -438,11 +438,11 @@ viewDistanceDamage model =
             damageRange : { min : Float, max : Float }
             damageRange =
                 distanceDamage
-                    { level = model.distanceLevel
-                    , skill = model.distanceSkill
-                    , attack = model.distanceAttack
+                    { level = model.distanceLevel |> String.toInt |> Maybe.withDefault 0
+                    , skill = model.distanceSkill |> String.toInt |> Maybe.withDefault 0
+                    , attack = model.distanceAttack |> String.toInt |> Maybe.withDefault 0
                     , stance = model.distanceFightStance
-                    , dexterity = model.distanceDexterity
+                    , dexterity = model.distanceDexterity |> String.toInt |> Maybe.withDefault 0
                     }
           in
           E.column [ E.paddingEach { edges | top = 12 }, E.spacing 8 ]
@@ -479,15 +479,15 @@ viewMaxBlockingDamage model =
             ]
         , Theme.spaceY 12
         , EI.text [ E.width E.fill ]
-            { onChange = String.toInt >> Maybe.withDefault 10 >> InputBlockingSkill
-            , text = String.fromInt model.blockingSkill
+            { onChange = InputBlockingSkill
+            , text = model.blockingSkill
             , placeholder = Nothing
             , label = EI.labelAbove [] (E.text "Blocking Skill")
             }
         , Theme.spaceY 12
         , EI.text [ E.width E.fill ]
-            { onChange = String.toInt >> Maybe.withDefault 10 >> InputBlockingDefense
-            , text = String.fromInt model.blockingDefense
+            { onChange = InputBlockingDefense
+            , text = model.blockingDefense
             , placeholder = Nothing
             , label = EI.labelAbove [] (E.text "Shield Defense")
             }
@@ -495,8 +495,8 @@ viewMaxBlockingDamage model =
             maxDmgBlocked : Float
             maxDmgBlocked =
                 maxDamageBlocked
-                    { skill = model.blockingSkill
-                    , defense = model.blockingDefense
+                    { skill = model.blockingSkill |> String.toInt |> Maybe.withDefault 0
+                    , defense = model.blockingDefense |> String.toInt |> Maybe.withDefault 0
                     , stance = model.blockingFightStance
                     }
           in
@@ -531,15 +531,15 @@ viewArmorReducingDamage model =
         , E.el [ EF.bold, EF.size 12, EF.color Theme.red, E.centerX ] (E.text "Alpha")
         , Theme.spaceY 12
         , EI.text [ E.width E.fill ]
-            { onChange = String.toInt >> Maybe.withDefault 1 >> InputTotalArmor
-            , text = String.fromInt model.totalArmor
+            { onChange = InputTotalArmor
+            , text = model.totalArmor
             , placeholder = Nothing
             , label = EI.labelAbove [] (E.text "Total Armor")
             }
         , let
             damageRange : { min : Float, max : Float }
             damageRange =
-                reducedArmorDamage { totalArmor = model.totalArmor }
+                reducedArmorDamage { totalArmor = model.totalArmor |> String.toInt |> Maybe.withDefault 0 }
           in
           E.column [ E.paddingEach { edges | top = 12 }, E.spacing 8 ]
             [ E.row [ E.spacing 8 ]
@@ -571,22 +571,22 @@ viewMeleeSkillCalculator model =
         , E.el [ EF.bold, EF.size 12, EF.color Theme.red, E.centerX ] (E.text "Alpha")
         , Theme.spaceY 12
         , EI.text [ E.width E.fill ]
-            { onChange = String.toInt >> Maybe.withDefault 10 >> InputSkillMeleeFrom
-            , text = String.fromInt model.skillMeleeFrom
+            { onChange = InputSkillMeleeFrom
+            , text = model.skillMeleeFrom
             , placeholder = Nothing
             , label = EI.labelAbove [] (E.text "From")
             }
         , Theme.spaceY 12
         , EI.text [ E.width E.fill ]
-            { onChange = String.toInt >> Maybe.withDefault 20 >> InputSkillMeleeTo
-            , text = String.fromInt model.skillMeleeTo
+            { onChange = InputSkillMeleeTo
+            , text = model.skillMeleeTo
             , placeholder = Nothing
             , label = EI.labelAbove [] (E.text "To")
             }
         , Theme.spaceY 12
         , EI.text [ E.width E.fill ]
-            { onChange = String.toInt >> Maybe.withDefault 20 >> InputSkillMeleePercentToGo
-            , text = String.fromInt model.skillMeleePercentToGo
+            { onChange = InputSkillMeleePercentToGo
+            , text = model.skillMeleePercentToGo
             , placeholder = Nothing
             , label = EI.labelAbove [] (E.text "% To Go")
             }
@@ -595,9 +595,9 @@ viewMeleeSkillCalculator model =
             tries : Float
             tries =
                 meleeSkillTries
-                    { from = model.skillMeleeFrom
-                    , to = model.skillMeleeTo
-                    , toGo = model.skillMeleePercentToGo
+                    { from = model.skillMeleeFrom |> String.toInt |> Maybe.withDefault 0
+                    , to = model.skillMeleeTo |> String.toInt |> Maybe.withDefault 0
+                    , toGo = model.skillMeleePercentToGo |> String.toInt |> Maybe.withDefault 0
                     , worldType = model.worldType
                     }
 
@@ -636,22 +636,22 @@ viewDistanceSkillCalculator model =
         , E.el [ EF.bold, EF.size 12, EF.color Theme.red, E.centerX ] (E.text "Alpha")
         , Theme.spaceY 12
         , EI.text [ E.width E.fill ]
-            { onChange = String.toInt >> Maybe.withDefault 10 >> InputSkillDistanceFrom
-            , text = String.fromInt model.skillDistanceFrom
+            { onChange = InputSkillDistanceFrom
+            , text = model.skillDistanceFrom
             , placeholder = Nothing
             , label = EI.labelAbove [] (E.text "From")
             }
         , Theme.spaceY 12
         , EI.text [ E.width E.fill ]
-            { onChange = String.toInt >> Maybe.withDefault 20 >> InputSkillDistanceTo
-            , text = String.fromInt model.skillDistanceTo
+            { onChange = InputSkillDistanceTo
+            , text = model.skillDistanceTo
             , placeholder = Nothing
             , label = EI.labelAbove [] (E.text "To")
             }
         , Theme.spaceY 12
         , EI.text [ E.width E.fill ]
-            { onChange = String.toInt >> Maybe.withDefault 20 >> InputSkillDistancePercentToGo
-            , text = String.fromInt model.skillDistancePercentToGo
+            { onChange = InputSkillDistancePercentToGo
+            , text = model.skillDistancePercentToGo
             , placeholder = Nothing
             , label = EI.labelAbove [] (E.text "% To Go")
             }
@@ -660,9 +660,9 @@ viewDistanceSkillCalculator model =
             tries : Float
             tries =
                 distanceSkillTries
-                    { from = model.skillDistanceFrom
-                    , to = model.skillDistanceTo
-                    , toGo = model.skillDistancePercentToGo
+                    { from = model.skillDistanceFrom |> String.toInt |> Maybe.withDefault 0
+                    , to = model.skillDistanceTo |> String.toInt |> Maybe.withDefault 0
+                    , toGo = model.skillDistancePercentToGo |> String.toInt |> Maybe.withDefault 0
                     , worldType = model.worldType
                     }
 
@@ -701,22 +701,22 @@ viewBlockingSkillCalculator model =
         , E.el [ EF.bold, EF.size 12, EF.color Theme.red, E.centerX ] (E.text "Alpha")
         , Theme.spaceY 12
         , EI.text [ E.width E.fill ]
-            { onChange = String.toInt >> Maybe.withDefault 10 >> InputSkillBlockingFrom
-            , text = String.fromInt model.skillBlockingFrom
+            { onChange = InputSkillBlockingFrom
+            , text = model.skillBlockingFrom
             , placeholder = Nothing
             , label = EI.labelAbove [] (E.text "From")
             }
         , Theme.spaceY 12
         , EI.text [ E.width E.fill ]
-            { onChange = String.toInt >> Maybe.withDefault 20 >> InputSkillBlockingTo
-            , text = String.fromInt model.skillBlockingTo
+            { onChange = InputSkillBlockingTo
+            , text = model.skillBlockingTo
             , placeholder = Nothing
             , label = EI.labelAbove [] (E.text "To")
             }
         , Theme.spaceY 12
         , EI.text [ E.width E.fill ]
-            { onChange = String.toInt >> Maybe.withDefault 20 >> InputSkillBlockingPercentToGo
-            , text = String.fromInt model.skillBlockingPercentToGo
+            { onChange = InputSkillBlockingPercentToGo
+            , text = model.skillBlockingPercentToGo
             , placeholder = Nothing
             , label = EI.labelAbove [] (E.text "% To Go")
             }
@@ -725,9 +725,9 @@ viewBlockingSkillCalculator model =
             tries : Float
             tries =
                 blockingSkillTries
-                    { from = model.skillBlockingFrom
-                    , to = model.skillBlockingTo
-                    , toGo = model.skillBlockingPercentToGo
+                    { from = model.skillBlockingFrom |> String.toInt |> Maybe.withDefault 0
+                    , to = model.skillBlockingTo |> String.toInt |> Maybe.withDefault 0
+                    , toGo = model.skillBlockingPercentToGo |> String.toInt |> Maybe.withDefault 0
                     , worldType = model.worldType
                     }
 
@@ -779,22 +779,22 @@ viewMagicLevelCalculator model =
         , E.el [ EF.bold, EF.size 12, EF.color Theme.red, E.centerX ] (E.text "Alpha")
         , Theme.spaceY 12
         , EI.text [ E.width E.fill ]
-            { onChange = String.toInt >> Maybe.withDefault 10 >> InputMagicLevelFrom
-            , text = String.fromInt model.magicLevelFrom
+            { onChange = InputMagicLevelFrom
+            , text = model.magicLevelFrom
             , placeholder = Nothing
             , label = EI.labelAbove [] (E.text "From")
             }
         , Theme.spaceY 12
         , EI.text [ E.width E.fill ]
-            { onChange = String.toInt >> Maybe.withDefault 20 >> InputMagicLevelTo
-            , text = String.fromInt model.magicLevelTo
+            { onChange = InputMagicLevelTo
+            , text = model.magicLevelTo
             , placeholder = Nothing
             , label = EI.labelAbove [] (E.text "To")
             }
         , Theme.spaceY 12
         , EI.text [ E.width E.fill ]
-            { onChange = String.toInt >> Maybe.withDefault 10000 >> InputMagicLevelPercentToGo
-            , text = String.fromInt model.magicLevelPercentToGo
+            { onChange = InputMagicLevelPercentToGo
+            , text = model.magicLevelPercentToGo
             , placeholder = Nothing
             , label = EI.labelAbove [] (E.text "% To Go")
             }
@@ -803,9 +803,9 @@ viewMagicLevelCalculator model =
             mana : Float
             mana =
                 manaRequiredToMagicLevel
-                    { from = model.magicLevelFrom
-                    , to = model.magicLevelTo
-                    , toGo = model.magicLevelPercentToGo
+                    { from = model.magicLevelFrom |> String.toInt |> Maybe.withDefault 0
+                    , to = model.magicLevelTo |> String.toInt |> Maybe.withDefault 0
+                    , toGo = model.magicLevelPercentToGo |> String.toInt |> Maybe.withDefault 0
                     , worldType = model.worldType
                     }
 
