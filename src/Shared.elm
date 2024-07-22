@@ -84,7 +84,6 @@ subscriptions _ =
 
 isMobile : Model -> Bool
 isMobile shared =
-    -- shared.device.class == E.Phone && (shared.device.orientation == E.Portrait)
     shared.device.class == E.Phone
 
 

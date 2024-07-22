@@ -207,12 +207,39 @@ view model shared =
 
 
 view_ : Model -> Shared.Model -> E.Element Msg
-view_ model _ =
+view_ model shared =
+    let
+        isMobile : Bool
+        isMobile =
+            -- List.member shared.device.class [ E.Phone, E.Tablet ]
+            shared.screenWidth <= 600
+
+        mobileRatio : Int
+        mobileRatio =
+            if isMobile then
+                2
+
+            else
+                1
+    in
     E.column
-        [ E.centerX
-        , E.padding 32
+        [ if isMobile then
+            E.width E.fill
+
+          else
+            E.centerX
+        , E.padding (32 // mobileRatio)
         ]
-        [ E.el [ EF.bold, EF.size 30, E.centerX ] (E.text "Medivia Novus Calculator")
+        [ E.el
+            [ EF.bold
+            , if isMobile then
+                EF.size 24
+
+              else
+                EF.size 30
+            , E.centerX
+            ]
+            (E.text "Medivia Novus Calculator")
         , E.link
             [ EF.bold
             , EF.size 12
@@ -227,20 +254,28 @@ view_ model _ =
         , Theme.spaceY 32
         , E.el [ EF.bold, EF.size 26, E.centerX ] (E.text "Damage")
         , Theme.spaceY 16
-        , E.wrappedRow [ E.spacing 32 ]
+        , viewContainer isMobile
             [ viewMeleeDamage model
             , viewDistanceDamage model
             ]
-        , Theme.spaceY 32
-        , E.wrappedRow [ E.spacing 32 ]
+        , Theme.spaceY (32 // mobileRatio)
+        , viewContainer isMobile
             [ viewMaxBlockingDamage model
             , viewArmorReducingDamage model
             ]
-        , Theme.spaceY 32
+        , Theme.spaceY (32 // mobileRatio)
         , E.el [ EF.bold, EF.size 26, E.centerX ] (E.text "Skills")
-        , Theme.spaceY 16
-        , E.column [ E.centerX ]
-            [ EI.radioRow [ E.spacing 8 ]
+        , Theme.spaceY (16 // mobileRatio)
+        , let
+            viewRadio =
+                if isMobile then
+                    EI.radio
+
+                else
+                    EI.radioRow
+          in
+          E.column [ E.centerX ]
+            [ viewRadio [ E.spacing 8 ]
                 { onChange = InputWorldType
                 , options =
                     [ EI.option WorldTypeSlow (E.text "1x skills and ML")
@@ -250,23 +285,41 @@ view_ model _ =
                 , label = EI.labelHidden "world type"
                 }
             ]
-        , Theme.spaceY 16
-        , E.wrappedRow [ E.spacing 32 ]
+        , Theme.spaceY (16 // mobileRatio)
+        , viewContainer isMobile
             [ viewMeleeSkillCalculator model
             , viewDistanceSkillCalculator model
             ]
-        , Theme.spaceY 32
-        , E.wrappedRow [ E.spacing 32 ]
+        , Theme.spaceY (32 // mobileRatio)
+        , viewContainer isMobile
             [ viewBlockingSkillCalculator model
             , viewMagicLevelCalculator model
             ]
         ]
 
 
+viewContainer : Bool -> List (E.Element msg) -> E.Element msg
+viewContainer isMobile content =
+    if isMobile then
+        E.column
+            [ E.width E.fill
+            , E.spacing 16
+            , E.paddingXY 16 0
+            ]
+            content
+
+    else
+        E.row
+            [ E.width (E.px 600)
+            , E.spacing 32
+            ]
+            content
+
+
 viewMeleeDamage : Model -> E.Element Msg
 viewMeleeDamage model =
     E.column
-        [ E.width (E.px 400)
+        [ E.width E.fill
         , E.height (E.px 510)
         , E.padding 16
         , EBO.width 1
@@ -274,16 +327,14 @@ viewMeleeDamage model =
         ]
         [ E.el [ EF.bold, EF.size 24, E.centerX ] (E.text "Melee Damage")
         , E.el [ EF.bold, EF.size 12, EF.color Theme.red, E.centerX ] (E.text "Alpha")
-        , EI.radioRow [ E.spacing 8 ]
-            { onChange = InputMeleeFightStance
-            , options =
-                [ EI.option FightStanceOffensive (E.text "Offensive")
-                , EI.option FightStanceBalanced (E.text "Balanced")
-                , EI.option FightStanceDefensive (E.text "Deffensive")
-                ]
-            , selected = Just model.meleeFightStance
-            , label = EI.labelAbove [ E.paddingEach { edges | bottom = 8 } ] (E.text "Stance")
-            }
+        , E.row [ E.centerX, E.paddingEach { edges | top = 12 } ]
+            [ EI.radioRow [ E.spacing 8 ]
+                { onChange = InputMeleeFightStance
+                , options = fightStanceOptions
+                , selected = Just model.meleeFightStance
+                , label = EI.labelHidden "fight stance"
+                }
+            ]
         , Theme.spaceY 12
         , EI.text [ E.width E.fill ]
             { onChange = String.toInt >> Maybe.withDefault 1 >> InputMeleeLevel
@@ -339,7 +390,7 @@ viewMeleeDamage model =
 viewDistanceDamage : Model -> E.Element Msg
 viewDistanceDamage model =
     E.column
-        [ E.width (E.px 400)
+        [ E.width E.fill
         , E.height (E.px 510)
         , E.padding 16
         , EBO.width 1
@@ -347,16 +398,14 @@ viewDistanceDamage model =
         ]
         [ E.el [ EF.bold, EF.size 24, E.centerX ] (E.text "Distance Damage")
         , E.el [ EF.bold, EF.size 12, EF.color Theme.red, E.centerX ] (E.text "Alpha")
-        , EI.radioRow [ E.spacing 8 ]
-            { onChange = InputDistanceFightStance
-            , options =
-                [ EI.option FightStanceOffensive (E.text "Offensive")
-                , EI.option FightStanceBalanced (E.text "Balanced")
-                , EI.option FightStanceDefensive (E.text "Deffensive")
-                ]
-            , selected = Just model.distanceFightStance
-            , label = EI.labelAbove [ E.paddingEach { edges | bottom = 8 } ] (E.text "Stance")
-            }
+        , E.row [ E.centerX, E.paddingEach { edges | top = 12 } ]
+            [ EI.radioRow [ E.spacing 8 ]
+                { onChange = InputDistanceFightStance
+                , options = fightStanceOptions
+                , selected = Just model.distanceFightStance
+                , label = EI.labelHidden "fight stance"
+                }
+            ]
         , Theme.spaceY 12
         , EI.text [ E.width E.fill ]
             { onChange = String.toInt >> Maybe.withDefault 1 >> InputDistanceLevel
@@ -412,24 +461,22 @@ viewDistanceDamage model =
 viewMaxBlockingDamage : Model -> E.Element Msg
 viewMaxBlockingDamage model =
     E.column
-        [ E.width (E.px 400)
+        [ E.width E.fill
         , E.height (E.px 374)
         , E.padding 16
         , EBO.width 1
         , EBO.rounded 4
         ]
-        [ E.el [ EF.bold, EF.size 24, E.centerX ] (E.text "Blocking Reduced Damage")
+        [ E.el [ EF.bold, EF.size 24, E.centerX ] (E.text "Blocking Dmg")
         , E.el [ EF.bold, EF.size 12, EF.color Theme.red, E.centerX ] (E.text "Alpha")
-        , EI.radioRow [ E.spacing 8 ]
-            { onChange = InputBlockingFightStance
-            , options =
-                [ EI.option FightStanceOffensive (E.text "Offensive")
-                , EI.option FightStanceBalanced (E.text "Balanced")
-                , EI.option FightStanceDefensive (E.text "Deffensive")
-                ]
-            , selected = Just model.blockingFightStance
-            , label = EI.labelAbove [ E.paddingEach { edges | bottom = 8 } ] (E.text "Stance")
-            }
+        , E.row [ E.centerX, E.paddingEach { edges | top = 12 } ]
+            [ EI.radioRow [ E.spacing 8 ]
+                { onChange = InputBlockingFightStance
+                , options = fightStanceOptions
+                , selected = Just model.blockingFightStance
+                , label = EI.labelHidden "fight stance"
+                }
+            ]
         , Theme.spaceY 12
         , EI.text [ E.width E.fill ]
             { onChange = String.toInt >> Maybe.withDefault 10 >> InputBlockingSkill
@@ -474,13 +521,13 @@ viewMaxBlockingDamage model =
 viewArmorReducingDamage : Model -> E.Element Msg
 viewArmorReducingDamage model =
     E.column
-        [ E.width (E.px 400)
+        [ E.width E.fill
         , E.height (E.px 374)
         , E.padding 16
         , EBO.width 1
         , EBO.rounded 4
         ]
-        [ E.el [ EF.bold, EF.size 24, E.centerX ] (E.text "Armor Reduced Damage")
+        [ E.el [ EF.bold, EF.size 24, E.centerX ] (E.text "Armor Reduced")
         , E.el [ EF.bold, EF.size 12, EF.color Theme.red, E.centerX ] (E.text "Alpha")
         , Theme.spaceY 12
         , EI.text [ E.width E.fill ]
@@ -514,7 +561,7 @@ viewArmorReducingDamage model =
 viewMeleeSkillCalculator : Model -> E.Element Msg
 viewMeleeSkillCalculator model =
     E.column
-        [ E.width (E.px 400)
+        [ E.width E.fill
         , E.height (E.px 390)
         , E.padding 16
         , EBO.width 1
@@ -579,7 +626,7 @@ viewMeleeSkillCalculator model =
 viewDistanceSkillCalculator : Model -> E.Element Msg
 viewDistanceSkillCalculator model =
     E.column
-        [ E.width (E.px 400)
+        [ E.width E.fill
         , E.height (E.px 390)
         , E.padding 16
         , EBO.width 1
@@ -644,7 +691,7 @@ viewDistanceSkillCalculator model =
 viewBlockingSkillCalculator : Model -> E.Element Msg
 viewBlockingSkillCalculator model =
     E.column
-        [ E.width (E.px 400)
+        [ E.width E.fill
         , E.height (E.px 416)
         , E.padding 16
         , EBO.width 1
@@ -722,7 +769,7 @@ viewBlockingSkillCalculator model =
 viewMagicLevelCalculator : Model -> E.Element Msg
 viewMagicLevelCalculator model =
     E.column
-        [ E.width (E.px 400)
+        [ E.width E.fill
         , E.height (E.px 416)
         , E.padding 16
         , EBO.width 1
@@ -1071,3 +1118,11 @@ viewFloat value =
             ]
             (E.text ("." ++ String.padLeft 2 '0' (String.fromInt decPart)))
         ]
+
+
+fightStanceOptions : List (EI.Option FightStance x)
+fightStanceOptions =
+    [ EI.option FightStanceOffensive (E.text "🗡")
+    , EI.option FightStanceBalanced (E.text "🗡🛡")
+    , EI.option FightStanceDefensive (E.text "🛡")
+    ]

@@ -3,10 +3,12 @@ module Frontend exposing (..)
 import Browser exposing (UrlRequest(..))
 import Browser.Navigation
 import Element as E
+import Element.Background as EB
 import Lamdera
 import Page
 import Route exposing (Route)
 import Shared
+import Theme
 import Types exposing (..)
 import Url
 
@@ -102,8 +104,12 @@ updateFromBackend msg model =
 
 subscriptions : FrontendModel -> Sub FrontendMsg
 subscriptions model =
-    Page.subscriptions model.page
-        |> Sub.map FrontendMsg_PageMsg
+    Sub.batch
+        [ Page.subscriptions model.page
+            |> Sub.map FrontendMsg_PageMsg
+        , Shared.subscriptions model.shared
+            |> Sub.map FrontendMsg_SharedMsg
+        ]
 
 
 view : FrontendModel -> Browser.Document FrontendMsg
@@ -117,6 +123,8 @@ view model =
         [ body
             |> List.map (E.map FrontendMsg_PageMsg)
             |> E.column [ E.width E.fill, E.height E.fill ]
-            |> E.layout []
+            |> E.layout
+                [ EB.color (E.rgb255 0xF4 0xF5 0xF6)
+                ]
         ]
     }
