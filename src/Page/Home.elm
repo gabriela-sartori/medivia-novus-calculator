@@ -1158,11 +1158,8 @@ blockingSkillTriesHelper skill =
 
 
 fishingSkillTries : { from : Int, to : Int, toGo : Int, worldType : WorldType } -> Float
-fishingSkillTries ({ from, to, toGo, worldType } as aff) =
+fishingSkillTries { from, to, toGo, worldType } =
     let
-        _ =
-            Debug.log "fi" (Debug.toString aff)
-
         modifier : Int
         modifier =
             case worldType of
