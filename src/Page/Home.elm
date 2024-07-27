@@ -9,6 +9,26 @@ import Shared
 import Theme exposing (edges)
 
 
+
+--
+-- fishing 10 - 2 throws (no catch) 80%
+-- fishing 10 (20%) = fishing 11 (18.18%)
+-- fishing 11 (first throw = 81.82 to 36.37  ) (36.365 each throw no catch)
+-- fishing 12 - 33.34~ each
+-- fishing 13 - 30.77 each
+-- fishing 14 - ((86.21-31.03)/2 = 27.59) - 27.58
+--
+-- Fishing chance formula 2 hipothesis:
+--
+-- 1) math.random(1, 100) <= math.min(math.max(10 + (player:getEffectiveSkillLevel(SKILL_FISHING) - 10) * 0.597, 10), 50)
+--
+-- 2) The actual formula was as follows: min(10 + L' * 0.6, 50)%
+-- 1. Roll a number from 0 to 79.
+-- 2. If your skill is at least that, flip a coin.
+-- 3. On heads you succeed.
+--
+
+
 type alias Model =
     { meleeFightStance : FightStance
     , meleeLevel : String
@@ -37,6 +57,9 @@ type alias Model =
     , magicLevelFrom : String
     , magicLevelTo : String
     , magicLevelPercentToGo : String
+    , skillFishingFrom : String
+    , skillFishingTo : String
+    , skillFishingPercentToGo : String
     }
 
 
@@ -69,6 +92,9 @@ init =
       , magicLevelFrom = "0"
       , magicLevelTo = "5"
       , magicLevelPercentToGo = "10000"
+      , skillFishingFrom = "10"
+      , skillFishingTo = "11"
+      , skillFishingPercentToGo = "10000"
       }
     , Cmd.none
     )
@@ -107,6 +133,9 @@ type Msg
     | InputMagicLevelFrom String
     | InputMagicLevelTo String
     | InputMagicLevelPercentToGo String
+    | InputSkillFishingFrom String
+    | InputSkillFishingTo String
+    | InputSkillFishingPercentToGo String
 
 
 update : Msg -> Model -> Shared.Model -> ( Model, Cmd Msg )
@@ -193,6 +222,15 @@ update msg model _ =
         InputMagicLevelPercentToGo value ->
             ( { model | magicLevelPercentToGo = value }, Cmd.none )
 
+        InputSkillFishingFrom value ->
+            ( { model | skillFishingFrom = value }, Cmd.none )
+
+        InputSkillFishingTo value ->
+            ( { model | skillFishingTo = value }, Cmd.none )
+
+        InputSkillFishingPercentToGo value ->
+            ( { model | skillFishingPercentToGo = value }, Cmd.none )
+
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
@@ -211,7 +249,6 @@ view_ model shared =
     let
         isMobile : Bool
         isMobile =
-            -- List.member shared.device.class [ E.Phone, E.Tablet ]
             shared.screenWidth <= 600
 
         mobileRatio : Int
@@ -294,6 +331,10 @@ view_ model shared =
         , viewContainer isMobile
             [ viewBlockingSkillCalculator model
             , viewMagicLevelCalculator model
+            ]
+        , Theme.spaceY (32 // mobileRatio)
+        , viewContainer isMobile
+            [ viewFishingSkillCalculator model
             ]
         ]
 
@@ -834,6 +875,71 @@ viewMagicLevelCalculator model =
         ]
 
 
+viewFishingSkillCalculator : Model -> E.Element Msg
+viewFishingSkillCalculator model =
+    E.column
+        [ E.width E.fill
+        , E.height (E.px 416)
+        , E.padding 16
+        , EBO.width 1
+        , EBO.rounded 4
+        ]
+        [ E.el [ EF.bold, EF.size 24, E.centerX ] (E.text "Fishing")
+        , E.el [ EF.bold, EF.size 12, EF.color Theme.red, E.centerX ] (E.text "Alpha")
+        , Theme.spaceY 12
+        , EI.text [ E.width E.fill ]
+            { onChange = InputSkillFishingFrom
+            , text = model.skillFishingFrom
+            , placeholder = Nothing
+            , label = EI.labelAbove [] (E.text "From")
+            }
+        , Theme.spaceY 12
+        , EI.text [ E.width E.fill ]
+            { onChange = InputSkillFishingTo
+            , text = model.skillFishingTo
+            , placeholder = Nothing
+            , label = EI.labelAbove [] (E.text "To")
+            }
+        , Theme.spaceY 12
+        , EI.text [ E.width E.fill ]
+            { onChange = InputSkillFishingPercentToGo
+            , text = model.skillFishingPercentToGo
+            , placeholder = Nothing
+            , label = EI.labelAbove [] (E.text "% To Go")
+            }
+        , Theme.spaceY 12
+        , let
+            tries : Float
+            tries =
+                fishingSkillTries
+                    { from = model.skillFishingFrom |> String.toInt |> Maybe.withDefault 0
+                    , to = model.skillFishingTo |> String.toInt |> Maybe.withDefault 0
+                    , toGo = model.skillFishingPercentToGo |> String.toInt |> Maybe.withDefault 0
+                    , worldType = model.worldType
+                    }
+
+            minutes : Int
+            minutes =
+                ceiling (tries / 50 {- 50 actions per minute -})
+          in
+          E.column [ E.paddingEach { edges | top = 12 }, E.spacing 8 ]
+            [ E.row [ E.spacing 8 ]
+                [ E.el [ EF.bold ] (E.text "Tries:")
+                , E.text (String.fromInt (ceiling tries))
+                ]
+            , E.row [ E.spacing 8 ]
+                [ E.el [ EF.bold ] (E.text "Time (50/min):")
+                , E.row [ E.spacing 2 ]
+                    [ E.text (String.fromInt (minutes // 60))
+                    , E.el [ EF.size 14, E.alignBottom ] (E.text "h")
+                    , E.text (String.fromInt (minutes |> modBy 60))
+                    , E.el [ EF.size 14, E.alignBottom ] (E.text "m")
+                    ]
+                ]
+            ]
+        ]
+
+
 
 -- Damage Calculators
 
@@ -872,7 +978,7 @@ meleeDamage { level, stance, skill, attack, strength } =
 
         min : Float
         min =
-            toFloat level / 4 + (max * 0.15) + toFloat strength * 0.3
+            toFloat (level - 1) / 4 + (max * 0.15) + toFloat strength * 0.3
     in
     { min = Basics.min min max
     , max = Basics.max min max
@@ -907,7 +1013,7 @@ distanceDamage { level, stance, skill, attack, dexterity } =
 
         min : Float
         min =
-            (toFloat level / 5 + (max * 0.2)) + toFloat dexterity * 0.8
+            (toFloat (level - 1) / 5 + (max * 0.2)) + toFloat dexterity * 0.8
     in
     { min = Basics.min min max
     , max = Basics.max min max
@@ -1049,6 +1155,43 @@ blockingSkillTriesHelper skill =
 
     else
         33.333 * 1.5 ^ toFloat (skill - 10)
+
+
+fishingSkillTries : { from : Int, to : Int, toGo : Int, worldType : WorldType } -> Float
+fishingSkillTries ({ from, to, toGo, worldType } as aff) =
+    let
+        _ =
+            Debug.log "fi" (Debug.toString aff)
+
+        modifier : Int
+        modifier =
+            case worldType of
+                WorldTypeSlow ->
+                    2
+
+                WorldTypeFast ->
+                    8
+
+        fishingSkillTriesForNextLevel : Int -> Float
+        fishingSkillTriesForNextLevel skill =
+            if skill < 10 then
+                0
+
+            else
+                20 * 1.1 ^ (toFloat skill - 10) / toFloat modifier
+    in
+    List.range from (to - 1)
+        |> List.indexedMap Tuple.pair
+        |> List.foldl
+            (\( index, skill ) acc ->
+                if index == 0 then
+                    fishingSkillTriesForNextLevel skill
+                        * (toFloat toGo / 10000)
+
+                else
+                    acc + fishingSkillTriesForNextLevel skill
+            )
+            0
 
 
 manaRequiredToMagicLevel : { from : Int, to : Int, toGo : Int, worldType : WorldType } -> Float
