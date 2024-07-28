@@ -497,10 +497,7 @@ viewDistanceDamage model =
                 ]
             ]
         , Theme.spaceY 8
-        , E.row [ E.spacing 4 ]
-            [ E.text "Hit Chance"
-            , E.el [ EF.size 12, E.moveDown 1 ] (E.text "with 75% limit 1H, 95% 2H")
-            ]
+        , E.text "Hit Chance"
         , Theme.spaceY 4
         , let
             viewDistHitChanceRow : Int -> E.Element Msg
