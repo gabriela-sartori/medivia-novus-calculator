@@ -361,7 +361,7 @@ viewMeleeDamage : Model -> E.Element Msg
 viewMeleeDamage model =
     E.column
         [ E.width E.fill
-        , E.height (E.px 510)
+        , E.height (E.px 560)
         , E.padding 16
         , EBO.width 1
         , EBO.rounded 4
@@ -415,7 +415,7 @@ viewMeleeDamage model =
                     , strength = model.meleeStrength |> String.toInt |> Maybe.withDefault 0
                     }
           in
-          E.column [ E.paddingEach { edges | top = 12 }, E.spacing 8 ]
+          E.row [ E.spacing 20, E.paddingEach { edges | top = 12 } ]
             [ E.row [ E.spacing 8 ]
                 [ E.el [ EF.bold ] (E.text "Min:")
                 , viewFloat damageRange.min
@@ -432,7 +432,7 @@ viewDistanceDamage : Model -> E.Element Msg
 viewDistanceDamage model =
     E.column
         [ E.width E.fill
-        , E.height (E.px 510)
+        , E.height (E.px 560)
         , E.padding 16
         , EBO.width 1
         , EBO.rounded 4
@@ -486,7 +486,7 @@ viewDistanceDamage model =
                     , dexterity = model.distanceDexterity |> String.toInt |> Maybe.withDefault 0
                     }
           in
-          E.column [ E.paddingEach { edges | top = 12 }, E.spacing 8 ]
+          E.row [ E.spacing 20, E.paddingEach { edges | top = 12 } ]
             [ E.row [ E.spacing 8 ]
                 [ E.el [ EF.bold ] (E.text "Min:")
                 , viewFloat damageRange.min
@@ -495,6 +495,38 @@ viewDistanceDamage model =
                 [ E.el [ EF.bold ] (E.text "Max:")
                 , viewFloat damageRange.max
                 ]
+            ]
+        , Theme.spaceY 8
+        , E.row [ E.spacing 4 ]
+            [ E.text "Hit Chance"
+            , E.el [ EF.size 12, E.moveDown 1 ] (E.text "with 75% limit 1H, 95% 2H")
+            ]
+        , Theme.spaceY 4
+        , let
+            viewDistHitChanceRow : Int -> E.Element Msg
+            viewDistHitChanceRow sqm =
+                E.row [ EF.size 16 ]
+                    [ E.text (String.fromInt sqm)
+                    , E.text " sqm: "
+                    , distanceHitChance
+                        { sqm = sqm
+                        , skill = model.distanceSkill |> String.toInt |> Maybe.withDefault 0
+                        }
+                        |> round2
+                        |> String.fromFloat
+                        |> E.text
+                    , E.text "%"
+                    ]
+          in
+          E.row [ E.spacing 16 ]
+            [ E.column []
+                (List.range 0 3
+                    |> List.map viewDistHitChanceRow
+                )
+            , E.column [ E.alignTop ]
+                (List.range 4 6
+                    |> List.map viewDistHitChanceRow
+                )
             ]
         ]
 
@@ -988,6 +1020,38 @@ meleeDamage { level, stance, skill, attack, strength } =
     }
 
 
+distanceHitChance : { sqm : Int, skill : Int } -> Float
+distanceHitChance { sqm, skill } =
+    let
+        ( base, modifier ) =
+            case sqm of
+                0 ->
+                    ( 40, 0.33 )
+
+                1 ->
+                    ( 50, 0.44 )
+
+                2 ->
+                    ( 50, 0.55 )
+
+                3 ->
+                    ( 40, 0.66 )
+
+                4 ->
+                    ( 40, 0.66 )
+
+                5 ->
+                    ( 40, 0.55 )
+
+                6 ->
+                    ( 35, 0.44 )
+
+                _ ->
+                    ( -1, 0 )
+    in
+    base + modifier * toFloat skill
+
+
 distanceDamage :
     { level : Int
     , skill : Int
@@ -1269,3 +1333,8 @@ fightStanceOptions =
     , EI.option FightStanceBalanced (E.text "🗡🛡")
     , EI.option FightStanceDefensive (E.text "🛡")
     ]
+
+
+round2 : Float -> Float
+round2 n =
+    toFloat (truncate (n * 100)) / 100
