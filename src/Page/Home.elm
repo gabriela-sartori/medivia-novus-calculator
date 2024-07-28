@@ -936,6 +936,9 @@ viewFishingSkillCalculator model =
                     , E.el [ EF.size 14, E.alignBottom ] (E.text "m")
                     ]
                 ]
+            , E.paragraph [ EF.size 12 ]
+                [ E.text "This is the max time you will need, but in reality it will be less if you catch rare fish along the way."
+                ]
             ]
         ]
 
