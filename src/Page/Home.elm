@@ -9,26 +9,6 @@ import Shared
 import Theme exposing (edges)
 
 
-
---
--- fishing 10 - 2 throws (no catch) 80%
--- fishing 10 (20%) = fishing 11 (18.18%)
--- fishing 11 (first throw = 81.82 to 36.37  ) (36.365 each throw no catch)
--- fishing 12 - 33.34~ each
--- fishing 13 - 30.77 each
--- fishing 14 - ((86.21-31.03)/2 = 27.59) - 27.58
---
--- Fishing chance formula 2 hipothesis:
---
--- 1) math.random(1, 100) <= math.min(math.max(10 + (player:getEffectiveSkillLevel(SKILL_FISHING) - 10) * 0.597, 10), 50)
---
--- 2) The actual formula was as follows: min(10 + L' * 0.6, 50)%
--- 1. Roll a number from 0 to 79.
--- 2. If your skill is at least that, flip a coin.
--- 3. On heads you succeed.
---
-
-
 type alias Model =
     { meleeFightStance : FightStance
     , meleeLevel : String
@@ -60,6 +40,10 @@ type alias Model =
     , skillFishingFrom : String
     , skillFishingTo : String
     , skillFishingPercentToGo : String
+    , upLevelFrom : String
+    , upLevelTo : String
+    , upPercentToGo : String
+    , upXph : String
     }
 
 
@@ -95,6 +79,10 @@ init =
       , skillFishingFrom = "10"
       , skillFishingTo = "11"
       , skillFishingPercentToGo = "10000"
+      , upLevelFrom = "100"
+      , upLevelTo = "101"
+      , upPercentToGo = "10000"
+      , upXph = "30000"
       }
     , Cmd.none
     )
@@ -136,6 +124,10 @@ type Msg
     | InputSkillFishingFrom String
     | InputSkillFishingTo String
     | InputSkillFishingPercentToGo String
+    | InputUpLevelFrom String
+    | InputUpLevelTo String
+    | InputUpPercentToGo String
+    | InputUpXph String
 
 
 update : Msg -> Model -> Shared.Model -> ( Model, Cmd Msg )
@@ -230,6 +222,18 @@ update msg model _ =
 
         InputSkillFishingPercentToGo value ->
             ( { model | skillFishingPercentToGo = value }, Cmd.none )
+
+        InputUpLevelFrom value ->
+            ( { model | upLevelFrom = value }, Cmd.none )
+
+        InputUpLevelTo value ->
+            ( { model | upLevelTo = value }, Cmd.none )
+
+        InputUpPercentToGo value ->
+            ( { model | upPercentToGo = value }, Cmd.none )
+
+        InputUpXph value ->
+            ( { model | upXph = value }, Cmd.none )
 
 
 subscriptions : Model -> Sub Msg
@@ -335,6 +339,7 @@ view_ model shared =
         , Theme.spaceY (32 // mobileRatio)
         , viewContainer isMobile
             [ viewFishingSkillCalculator model
+            , viewAdvanceLevelCalculator model
             ]
         ]
 
@@ -908,7 +913,7 @@ viewFishingSkillCalculator : Model -> E.Element Msg
 viewFishingSkillCalculator model =
     E.column
         [ E.width E.fill
-        , E.height (E.px 416)
+        , E.height (E.px 460)
         , E.padding 16
         , EBO.width 1
         , EBO.rounded 4
@@ -967,6 +972,79 @@ viewFishingSkillCalculator model =
                 ]
             , E.paragraph [ EF.size 12 ]
                 [ E.text "This is the max time you will need, but in reality it will be less if you catch rare fish along the way."
+                ]
+            ]
+        ]
+
+
+viewAdvanceLevelCalculator : Model -> E.Element Msg
+viewAdvanceLevelCalculator model =
+    E.column
+        [ E.width E.fill
+        , E.height (E.px 460)
+        , E.padding 16
+        , EBO.width 1
+        , EBO.rounded 4
+        ]
+        [ E.el [ EF.bold, EF.size 24, E.centerX ] (E.text "Exp Calculator")
+        , E.el [ EF.bold, EF.size 12, EF.color Theme.red, E.centerX ] (E.text "Alpha")
+        , Theme.spaceY 12
+        , EI.text [ E.width E.fill ]
+            { onChange = InputUpLevelFrom
+            , text = model.upLevelFrom
+            , placeholder = Nothing
+            , label = EI.labelAbove [] (E.text "From")
+            }
+        , Theme.spaceY 12
+        , EI.text [ E.width E.fill ]
+            { onChange = InputUpLevelTo
+            , text = model.upLevelTo
+            , placeholder = Nothing
+            , label = EI.labelAbove [] (E.text "To")
+            }
+        , Theme.spaceY 12
+        , EI.text [ E.width E.fill ]
+            { onChange = InputUpPercentToGo
+            , text = model.upPercentToGo
+            , placeholder = Nothing
+            , label = EI.labelAbove [] (E.text "% To Go")
+            }
+        , Theme.spaceY 12
+        , EI.text [ E.width E.fill ]
+            { onChange = InputUpXph
+            , text = model.upXph
+            , placeholder = Nothing
+            , label = EI.labelAbove [] (E.text "Exp/hour")
+            }
+        , let
+            expLeft : Int
+            expLeft =
+                expFromLevelTo
+                    { from = model.upLevelFrom |> String.toInt |> Maybe.withDefault 0
+                    , to = model.upLevelTo |> String.toInt |> Maybe.withDefault 0
+                    , toGo = model.upPercentToGo |> String.toInt |> Maybe.withDefault 10000
+                    }
+
+            minutes : Int
+            minutes =
+                model.upXph
+                    |> String.toInt
+                    |> Maybe.withDefault 0
+                    |> (\v -> ceiling ((toFloat expLeft / toFloat v) * 60))
+          in
+          E.column [ E.paddingEach { edges | top = 12 }, E.spacing 8 ]
+            [ E.row [ E.spacing 8 ]
+                [ E.el [ EF.bold ] (E.text "Exp:")
+                , E.text (String.fromInt expLeft)
+                ]
+            , E.row [ E.spacing 8 ]
+                [ E.el [ EF.bold ] (E.text "Time:")
+                , E.row [ E.spacing 2 ]
+                    [ E.text (String.fromInt (minutes // 60))
+                    , E.el [ EF.size 14, E.alignBottom ] (E.text "h")
+                    , E.text (String.fromInt (minutes |> modBy 60))
+                    , E.el [ EF.size 14, E.alignBottom ] (E.text "m")
+                    ]
                 ]
             ]
         ]
@@ -1299,6 +1377,31 @@ manaToMinutes { mana, worldType } =
 
         WorldTypeFast ->
             ceiling (toFloat mana * 1.5 / 60)
+
+
+expFromLevelTo : { from : Int, to : Int, toGo : Int } -> Int
+expFromLevelTo { from, to, toGo } =
+    List.range from (to - 1)
+        |> List.foldl
+            (\lvl acc ->
+                let
+                    exp : Int
+                    exp =
+                        expToLevel lvl - expToLevel (lvl - 1)
+                in
+                if lvl == from then
+                    acc + ceiling (toFloat exp * toFloat toGo / 10000)
+
+                else
+                    acc + exp
+            )
+            0
+
+
+expToLevel : Int -> Int
+expToLevel lvl =
+    (((275 * (toFloat lvl ^ 4) + 85000 * (toFloat lvl ^ 3) - 1500 * (toFloat lvl ^ 2)) / 1000000) * 100 + 200 * (toFloat lvl - 1))
+        |> ceiling
 
 
 viewFloat : Float -> E.Element msg
