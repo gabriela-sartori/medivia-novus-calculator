@@ -581,7 +581,7 @@ viewDistanceDamage model =
             dmgBlock : { min : Int, max : Int }
             dmgBlock =
                 monstersDict
-                    |> Dict.get model.meleeMonster
+                    |> Dict.get model.distanceMonster
                     |> Maybe.withDefault { name = "Error", arm = ( 0, 0 ), def = ( 0, 0 ) }
                     |> (\monster ->
                             { min = Tuple.first monster.arm
