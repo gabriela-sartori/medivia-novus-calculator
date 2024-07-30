@@ -1293,7 +1293,7 @@ maxDamageBlocked { skill, defense, stance } =
 reducedArmorDamage : { totalArmor : Int } -> { min : Float, max : Float }
 reducedArmorDamage { totalArmor } =
     { min = toFloat totalArmor ^ (4 / 3) * 0.27
-    , max = toFloat totalArmor ^ (3 / 2) * 0.26
+    , max = toFloat totalArmor ^ (3 / 2) * 0.26 + 0.99
     }
 
 
