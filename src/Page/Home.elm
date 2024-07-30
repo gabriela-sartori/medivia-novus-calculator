@@ -1,10 +1,13 @@
 module Page.Home exposing (FightStance(..), Model, Msg(..), init, subscriptions, update, view)
 
+import Dict exposing (Dict)
 import Element as E
 import Element.Border as EBO
 import Element.Font as EF
 import Element.Input as EI
+import Html as H
 import Html.Attributes as HA
+import Html.Events as HE
 import Shared
 import Theme exposing (edges)
 
@@ -15,11 +18,13 @@ type alias Model =
     , meleeSkill : String
     , meleeAttack : String
     , meleeStrength : String
+    , meleeMonster : String
     , distanceFightStance : FightStance
     , distanceLevel : String
     , distanceSkill : String
     , distanceAttack : String
     , distanceDexterity : String
+    , distanceMonster : String
     , blockingFightStance : FightStance
     , blockingSkill : String
     , blockingDefense : String
@@ -54,11 +59,13 @@ init =
       , meleeSkill = "10"
       , meleeAttack = "10"
       , meleeStrength = "0"
+      , meleeMonster = "Dummy"
       , distanceFightStance = FightStanceOffensive
       , distanceLevel = "1"
       , distanceSkill = "10"
       , distanceAttack = "10"
       , distanceDexterity = "0"
+      , distanceMonster = "Dummy"
       , blockingFightStance = FightStanceDefensive
       , blockingSkill = "10"
       , blockingDefense = "10"
@@ -99,11 +106,13 @@ type Msg
     | InputMeleeSkill String
     | InputMeleeAttack String
     | InputMeleeStrength String
+    | InputMeleeMonster String
     | InputDistanceFightStance FightStance
     | InputDistanceLevel String
     | InputDistanceSkill String
     | InputDistanceAttack String
     | InputDistanceDexterity String
+    | InputDistanceMonster String
     | InputBlockingFightStance FightStance
     | InputBlockingSkill String
     | InputBlockingDefense String
@@ -148,6 +157,9 @@ update msg model _ =
         InputMeleeStrength value ->
             ( { model | meleeStrength = value }, Cmd.none )
 
+        InputMeleeMonster value ->
+            ( { model | meleeMonster = value }, Cmd.none )
+
         InputDistanceFightStance stance ->
             ( { model | distanceFightStance = stance }, Cmd.none )
 
@@ -162,6 +174,9 @@ update msg model _ =
 
         InputDistanceDexterity value ->
             ( { model | distanceDexterity = value }, Cmd.none )
+
+        InputDistanceMonster value ->
+            ( { model | distanceMonster = value }, Cmd.none )
 
         InputBlockingFightStance value ->
             ( { model | blockingFightStance = value }, Cmd.none )
@@ -366,7 +381,7 @@ viewMeleeDamage : Model -> E.Element Msg
 viewMeleeDamage model =
     E.column
         [ E.width E.fill
-        , E.height (E.px 560)
+        , E.height (E.px 580)
         , E.padding 16
         , EBO.width 1
         , EBO.rounded 4
@@ -409,6 +424,33 @@ viewMeleeDamage model =
             , placeholder = Nothing
             , label = EI.labelAbove [] (E.text "Strength")
             }
+        , Theme.spaceY 12
+        , E.html
+            (H.select [ HE.onInput InputMeleeMonster, HA.style "width" "100%" ]
+                (monsters
+                    |> List.map
+                        (\monster ->
+                            let
+                                ( minArm, maxArm ) =
+                                    monster.arm
+
+                                ( minDef, maxDef ) =
+                                    monster.def
+                            in
+                            H.option [ HA.value monster.name ]
+                                [ H.text monster.name
+                                , H.text " Arm: "
+                                , H.text (String.fromInt minArm)
+                                , H.text "-"
+                                , H.text (String.fromInt maxArm)
+                                , H.text " Def: "
+                                , H.text (String.fromInt minDef)
+                                , H.text "-"
+                                , H.text (String.fromInt maxDef)
+                                ]
+                        )
+                )
+            )
         , let
             damageRange : { min : Float, max : Float }
             damageRange =
@@ -419,15 +461,40 @@ viewMeleeDamage model =
                     , stance = model.meleeFightStance
                     , strength = model.meleeStrength |> String.toInt |> Maybe.withDefault 0
                     }
+
+            dmgBlock : { min : Int, max : Int }
+            dmgBlock =
+                monstersDict
+                    |> Dict.get model.meleeMonster
+                    |> Maybe.withDefault { name = "Error", arm = ( 0, 0 ), def = ( 0, 0 ) }
+                    |> (\monster ->
+                            { min = Tuple.first monster.def + Tuple.first monster.arm
+                            , max = Tuple.second monster.def + Tuple.second monster.arm
+                            }
+                       )
+
+            minDamage : Float
+            minDamage =
+                damageRange.min - toFloat dmgBlock.max
+
+            maxDamage : Float
+            maxDamage =
+                damageRange.max - toFloat dmgBlock.min
           in
-          E.row [ E.spacing 20, E.paddingEach { edges | top = 12 } ]
-            [ E.row [ E.spacing 8 ]
-                [ E.el [ EF.bold ] (E.text "Min:")
-                , viewFloat damageRange.min
+          E.column [ E.spacing 4, E.paddingEach { edges | top = 8 } ]
+            [ E.row [ E.spacing 32 ]
+                [ E.row [ E.spacing 8 ]
+                    [ E.el [ EF.bold ] (E.text "Min:")
+                    , viewFloat minDamage
+                    ]
+                , E.row [ E.spacing 8 ]
+                    [ E.el [ EF.bold ] (E.text "Max:")
+                    , viewFloat maxDamage
+                    ]
                 ]
             , E.row [ E.spacing 8 ]
-                [ E.el [ EF.bold ] (E.text "Max:")
-                , viewFloat damageRange.max
+                [ E.el [ EF.bold ] (E.text "Avg:")
+                , viewFloat (toFloat (truncate minDamage + truncate maxDamage) / 2)
                 ]
             ]
         ]
@@ -437,7 +504,7 @@ viewDistanceDamage : Model -> E.Element Msg
 viewDistanceDamage model =
     E.column
         [ E.width E.fill
-        , E.height (E.px 560)
+        , E.height (E.px 580)
         , E.padding 16
         , EBO.width 1
         , EBO.rounded 4
@@ -480,6 +547,26 @@ viewDistanceDamage model =
             , placeholder = Nothing
             , label = EI.labelAbove [] (E.text "Dexterity")
             }
+        , Theme.spaceY 12
+        , E.html
+            (H.select [ HE.onInput InputDistanceMonster, HA.style "width" "100%" ]
+                (monsters
+                    |> List.map
+                        (\monster ->
+                            let
+                                ( minArm, maxArm ) =
+                                    monster.arm
+                            in
+                            H.option [ HA.value monster.name ]
+                                [ H.text monster.name
+                                , H.text " Arm: "
+                                , H.text (String.fromInt minArm)
+                                , H.text "-"
+                                , H.text (String.fromInt maxArm)
+                                ]
+                        )
+                )
+            )
         , let
             damageRange : { min : Float, max : Float }
             damageRange =
@@ -490,19 +577,42 @@ viewDistanceDamage model =
                     , stance = model.distanceFightStance
                     , dexterity = model.distanceDexterity |> String.toInt |> Maybe.withDefault 0
                     }
+
+            dmgBlock : { min : Int, max : Int }
+            dmgBlock =
+                monstersDict
+                    |> Dict.get model.meleeMonster
+                    |> Maybe.withDefault { name = "Error", arm = ( 0, 0 ), def = ( 0, 0 ) }
+                    |> (\monster ->
+                            { min = Tuple.first monster.arm
+                            , max = Tuple.second monster.arm
+                            }
+                       )
+
+            minDamage : Float
+            minDamage =
+                damageRange.min - toFloat dmgBlock.max
+
+            maxDamage : Float
+            maxDamage =
+                damageRange.max - toFloat dmgBlock.min
           in
-          E.row [ E.spacing 20, E.paddingEach { edges | top = 12 } ]
-            [ E.row [ E.spacing 8 ]
-                [ E.el [ EF.bold ] (E.text "Min:")
-                , viewFloat damageRange.min
+          E.column [ E.spacing 4, E.paddingEach { edges | top = 8 } ]
+            [ E.row [ E.spacing 32 ]
+                [ E.row [ E.spacing 8 ]
+                    [ E.el [ EF.bold ] (E.text "Min:")
+                    , viewFloat minDamage
+                    ]
+                , E.row [ E.spacing 8 ]
+                    [ E.el [ EF.bold ] (E.text "Max:")
+                    , viewFloat maxDamage
+                    ]
                 ]
             , E.row [ E.spacing 8 ]
-                [ E.el [ EF.bold ] (E.text "Max:")
-                , viewFloat damageRange.max
+                [ E.el [ EF.bold ] (E.text "Avg:")
+                , viewFloat (toFloat (truncate minDamage + truncate maxDamage) / 2)
                 ]
             ]
-        , Theme.spaceY 8
-        , E.text "Hit Chance"
         , Theme.spaceY 4
         , let
             viewDistHitChanceRow : Int -> E.Element Msg
@@ -1413,7 +1523,7 @@ viewFloat value =
 
         decPart : Int
         decPart =
-            truncate ((value - toFloat intPart) * 100)
+            abs (truncate ((value - toFloat intPart) * 100))
     in
     E.row []
         [ E.text (String.fromInt intPart)
@@ -1438,3 +1548,38 @@ fightStanceOptions =
 round2 : Float -> Float
 round2 n =
     toFloat (truncate (n * 100)) / 100
+
+
+monsters : List { name : String, arm : ( Int, Int ), def : ( Int, Int ) }
+monsters =
+    [ { name = "Dummy", arm = ( 0, 0 ), def = ( 0, 0 ) }
+    , { name = "Rat", arm = ( 0, 0 ), def = ( 0, 0 ) }
+    , { name = "Cave Rat", arm = ( 0, 0 ), def = ( 0, 0 ) }
+    , { name = "Troll", arm = ( 1, 3 ), def = ( 0, 1 ) }
+    , { name = "Swamp Troll", arm = ( 1, 3 ), def = ( 0, 1 ) }
+    , { name = "Skeleton", arm = ( 0, 0 ), def = ( 0, 4 ) }
+    , { name = "Rotworm", arm = ( 3, 9 ), def = ( 0, 6 ) }
+    , { name = "Orc", arm = ( 1, 3 ), def = ( 0, 3 ) }
+    , { name = "Orc Spearman", arm = ( 2, 6 ), def = ( 0, 7 ) }
+    , { name = "Mutated Rat", arm = ( 6, 18 ), def = ( 0, 9 ) }
+    , { name = "Minotaur", arm = ( 5, 14 ), def = ( 0, 6 ) }
+    , { name = "Minotaur Archer", arm = ( 3, 8 ), def = ( 0, 3 ) }
+    , { name = "Elf", arm = ( 2, 6 ), def = ( 0, 7 ) }
+    , { name = "Witch", arm = ( 3, 9 ), def = ( 0, 7 ) }
+    , { name = "Ghoul", arm = ( 3, 9 ), def = ( 0, 14 ) }
+    , { name = "Elf Scout", arm = ( 3, 8 ), def = ( 0, 16 ) }
+    , { name = "Minotaur Mage", arm = ( 8, 24 ), def = ( 0, 61 ) }
+    , { name = "Elf Arcanist", arm = ( 7, 20 ), def = ( 0, 20 ) }
+    , { name = "Bonebeast", arm = ( 19, 56 ), def = ( 0, 101 ) }
+    , { name = "Fledgling Dragon", arm = ( 11, 33 ), def = ( 0, 54 ) }
+    ]
+
+
+monstersDict : Dict String { name : String, arm : ( Int, Int ), def : ( Int, Int ) }
+monstersDict =
+    monsters
+        |> List.foldl
+            (\monster acc ->
+                Dict.insert monster.name monster acc
+            )
+            Dict.empty
