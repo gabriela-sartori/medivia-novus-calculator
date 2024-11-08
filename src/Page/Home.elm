@@ -1509,7 +1509,7 @@ manaRequiredToMagicLevelHelper magicLevel =
         0
 
     else
-        80 * 5 ^ toFloat (magicLevel - 0)
+        80 * 5 ^ toFloat magicLevel
 
 
 manaToMinutes : { mana : Int, worldType : WorldType } -> Int
