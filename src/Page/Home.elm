@@ -1193,10 +1193,10 @@ meleeDamage { level, stance, skill, attack, strength } =
         adjustedLevel : Int
         adjustedLevel =
             if attack <= 15 then
-                1
+                0
 
             else
-                level
+                level - 1
 
         attackFactor : Float
         attackFactor =
@@ -1216,7 +1216,7 @@ meleeDamage { level, stance, skill, attack, strength } =
 
         min : Float
         min =
-            toFloat (adjustedLevel - 1) / 4 + (max * 0.15) + toFloat strength * 0.3
+            toFloat adjustedLevel / 4 + (max * 0.15) + toFloat strength * 0.3
     in
     { min = Basics.min min max
     , max = Basics.max min max
@@ -1268,10 +1268,10 @@ distanceDamage { level, stance, skill, attack, dexterity } =
         adjustedLevel : Int
         adjustedLevel =
             if attack <= 15 then
-                1
+                0
 
             else
-                level
+                level - 1
 
         attackFactor : Float
         attackFactor =
@@ -1296,7 +1296,7 @@ distanceDamage { level, stance, skill, attack, dexterity } =
 
         min : Float
         min =
-            (toFloat (adjustedLevel - 1) / 5 + (max * 0.2)) + toFloat dexterity * 0.8
+            (toFloat adjustedLevel / 5 + (max * 0.2)) + toFloat dexterity * 0.8
     in
     -- TODO: should `+ max * 0.2` inside min, be `max` or `Basics.max min mac`?
     -- TODO: should dexterity add after calculate the proper min/max?
