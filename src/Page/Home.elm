@@ -57,13 +57,13 @@ init =
     ( { meleeFightStance = FightStanceOffensive
       , meleeLevel = "1"
       , meleeSkill = "10"
-      , meleeAttack = "10"
+      , meleeAttack = "16"
       , meleeStrength = "0"
       , meleeMonster = "Dummy"
       , distanceFightStance = FightStanceOffensive
       , distanceLevel = "1"
       , distanceSkill = "10"
-      , distanceAttack = "10"
+      , distanceAttack = "30"
       , distanceDexterity = "0"
       , distanceMonster = "Dummy"
       , blockingFightStance = FightStanceDefensive
@@ -403,7 +403,12 @@ viewMeleeDamage model =
             , placeholder = Nothing
             , label = EI.labelAbove [] (E.text "Level")
             }
-        , Theme.spaceY 12
+        , E.el
+            [ EF.size 12
+            , E.paddingEach { edges | top = 4 }
+            , E.transparent (strToInt model.meleeAttack > 15)
+            ]
+            (E.text "Level is ignored when attack <= 15")
         , EI.text [ E.width E.fill ]
             { onChange = InputMeleeSkill
             , text = model.meleeSkill
@@ -526,7 +531,12 @@ viewDistanceDamage model =
             , placeholder = Nothing
             , label = EI.labelAbove [] (E.text "Level")
             }
-        , Theme.spaceY 12
+        , E.el
+            [ EF.size 12
+            , E.paddingEach { edges | top = 4 }
+            , E.transparent (strToInt model.distanceAttack > 15)
+            ]
+            (E.text "Level is ignored when attack <= 15")
         , EI.text [ E.width E.fill ]
             { onChange = InputDistanceSkill
             , text = model.distanceSkill
@@ -1180,6 +1190,14 @@ meleeDamage :
     -> { min : Float, max : Float }
 meleeDamage { level, stance, skill, attack, strength } =
     let
+        adjustedLevel : Int
+        adjustedLevel =
+            if attack <= 15 then
+                1
+
+            else
+                level
+
         attackFactor : Float
         attackFactor =
             case stance of
@@ -1198,7 +1216,7 @@ meleeDamage { level, stance, skill, attack, strength } =
 
         min : Float
         min =
-            toFloat (level - 1) / 4 + (max * 0.15) + toFloat strength * 0.3
+            toFloat (adjustedLevel - 1) / 4 + (max * 0.15) + toFloat strength * 0.3
     in
     { min = Basics.min min max
     , max = Basics.max min max
@@ -1247,6 +1265,14 @@ distanceDamage :
     -> { min : Float, max : Float }
 distanceDamage { level, stance, skill, attack, dexterity } =
     let
+        adjustedLevel : Int
+        adjustedLevel =
+            if attack <= 15 then
+                1
+
+            else
+                level
+
         attackFactor : Float
         attackFactor =
             case stance of
@@ -1270,7 +1296,7 @@ distanceDamage { level, stance, skill, attack, dexterity } =
 
         min : Float
         min =
-            (toFloat (level - 1) / 5 + (max * 0.2)) + toFloat dexterity * 0.8
+            (toFloat (adjustedLevel - 1) / 5 + (max * 0.2)) + toFloat dexterity * 0.8
     in
     -- TODO: should `+ max * 0.2` inside min, be `max` or `Basics.max min mac`?
     -- TODO: should dexterity add after calculate the proper min/max?
@@ -1590,3 +1616,9 @@ monstersDict =
                 Dict.insert monster.name monster acc
             )
             Dict.empty
+
+
+strToInt : String -> Int
+strToInt str =
+    String.toInt str
+        |> Maybe.withDefault 0
