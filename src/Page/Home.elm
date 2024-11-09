@@ -1581,15 +1581,27 @@ round2 n =
 monsters : List { name : String, arm : ( Int, Int ), def : ( Int, Int ) }
 monsters =
     [ { name = "Dummy", arm = ( 0, 0 ), def = ( 0, 0 ) }
+    , { name = "Horse", arm = ( 2, 5 ), def = ( 0, 0 ) }
     , { name = "Rat", arm = ( 0, 0 ), def = ( 0, 0 ) }
+    , { name = "Snake", arm = ( 0, 0 ), def = ( 0, 0 ) }
+    , { name = "Bug", arm = ( 0, 0 ), def = ( 0, 0 ) }
+    , { name = "Wasp", arm = ( 1, 3 ), def = ( 0, 3 ) }
+    , { name = "Spider", arm = ( 0, 0 ), def = ( 0, 0 ) }
+    , { name = "Poison Spider", arm = ( 0, 0 ), def = ( 0, 1 ) }
+    , { name = "Wolf", arm = ( 0, 0 ), def = ( 0, 0 ) }
+    , { name = "Bear", arm = ( 2, 6 ), def = ( 0, 1 ) }
     , { name = "Cave Rat", arm = ( 0, 0 ), def = ( 0, 0 ) }
     , { name = "Troll", arm = ( 1, 3 ), def = ( 0, 1 ) }
+    , { name = "Goblin", arm = ( 2, 6 ), def = ( 0, 3 ) }
     , { name = "Swamp Troll", arm = ( 1, 3 ), def = ( 0, 1 ) }
+    , { name = "Nether Spiderling", arm = ( 1, 3 ), def = ( 0, 1 ) }
+    , { name = "Scorpion", arm = ( 6, 18 ), def = ( 0, 1 ) }
     , { name = "Skeleton", arm = ( 0, 0 ), def = ( 0, 4 ) }
     , { name = "Rotworm", arm = ( 3, 9 ), def = ( 0, 6 ) }
     , { name = "Orc", arm = ( 1, 3 ), def = ( 0, 3 ) }
     , { name = "Orc Spearman", arm = ( 2, 6 ), def = ( 0, 7 ) }
     , { name = "Mutated Rat", arm = ( 6, 18 ), def = ( 0, 9 ) }
+    , { name = "Sand Spider", arm = ( 1, 3 ), def = ( 0, 1 ) }
     , { name = "Minotaur", arm = ( 5, 14 ), def = ( 0, 6 ) }
     , { name = "Minotaur Archer", arm = ( 3, 8 ), def = ( 0, 3 ) }
     , { name = "Elf", arm = ( 2, 6 ), def = ( 0, 7 ) }
@@ -1598,8 +1610,11 @@ monsters =
     , { name = "Elf Scout", arm = ( 3, 8 ), def = ( 0, 16 ) }
     , { name = "Minotaur Mage", arm = ( 8, 24 ), def = ( 0, 61 ) }
     , { name = "Elf Arcanist", arm = ( 7, 20 ), def = ( 0, 20 ) }
-    , { name = "Bonebeast", arm = ( 19, 56 ), def = ( 0, 101 ) }
+    , { name = "Bonebeast", arm = ( 8, 24 ), def = ( 0, 31 ) }
+    , { name = "Wrigg", arm = ( 8, 24 ), def = ( 0, 20 ) }
     , { name = "Fledgling Dragon", arm = ( 11, 33 ), def = ( 0, 54 ) }
+    , { name = "Incinera", arm = ( 11, 33 ), def = ( 0, 72 ) }
+    , { name = "Nether Spider", arm = ( 9, 27 ), def = ( 0, 26 ) }
     ]
 
 
