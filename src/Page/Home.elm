@@ -1287,7 +1287,7 @@ distanceDamage { level, stance, skill, attack, dexterity } =
 
         max : Float
         max =
-            (20 + toFloat skill ^ 2 / 1600 * toFloat attack / attackFactor) + toFloat dexterity * 1.2 + skill / 2
+            (20 + toFloat skill ^ 2 / 1600 * toFloat attack / attackFactor) + toFloat dexterity * 1.2 + toFloat skill / 2
 
         min : Float
         min =
