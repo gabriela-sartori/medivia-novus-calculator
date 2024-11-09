@@ -1285,14 +1285,9 @@ distanceDamage { level, stance, skill, attack, dexterity } =
                 FightStanceDefensive ->
                     2
 
-        adjustedSkill : Float
-        adjustedSkill =
-            -- According to dev, in novus distance damage, there is adjust before applying to formula
-            toFloat skill * 1.5
-
         max : Float
         max =
-            (20 + adjustedSkill ^ 2 / 1600 * toFloat attack / attackFactor) + toFloat dexterity * 1.2
+            (20 + toFloat skill ^ 2 / 1600 * toFloat attack / attackFactor) + toFloat dexterity * 1.2 + skill / 2
 
         min : Float
         min =
