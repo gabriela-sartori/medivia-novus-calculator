@@ -1,4 +1,4 @@
-module Page.Home exposing (FightStance(..), Model, Msg(..), init, subscriptions, update, view)
+module Page.Home exposing (FightStance(..), Model, Msg(..), WorldType(..), init, subscriptions, update, view)
 
 import Dict exposing (Dict)
 import Element as E
