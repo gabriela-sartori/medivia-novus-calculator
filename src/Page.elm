@@ -1,6 +1,7 @@
 module Page exposing (Model(..), Msg(..), init, subscriptions, update, view)
 
 import Element as E
+import Page.Highscores
 import Page.Home
 import Route exposing (Route)
 import Shared
@@ -8,6 +9,7 @@ import Shared
 
 type Model
     = Home Page.Home.Model
+    | Highscores Page.Highscores.Model
     | NotFound
 
 
@@ -22,9 +24,15 @@ init route shared _ =
                 |> Tuple.mapFirst Home
                 |> Tuple.mapSecond (Cmd.map HomeMsg)
 
+        Route.Highscores ->
+            Page.Highscores.init
+                |> Tuple.mapFirst Highscores
+                |> Tuple.mapSecond (Cmd.map HighscoresMsg)
+
 
 type Msg
     = HomeMsg Page.Home.Msg
+    | HighscoresMsg Page.Highscores.Msg
 
 
 update : Msg -> Model -> Shared.Model -> ( Model, Cmd Msg )
@@ -34,6 +42,11 @@ update msg model shared =
             Page.Home.update msg_ model_ shared
                 |> Tuple.mapFirst Home
                 |> Tuple.mapSecond (Cmd.map HomeMsg)
+
+        ( HighscoresMsg msg_, Highscores model_ ) ->
+            Page.Highscores.update msg_ model_ shared
+                |> Tuple.mapFirst Highscores
+                |> Tuple.mapSecond (Cmd.map HighscoresMsg)
 
         _ ->
             ( model, Cmd.none )
@@ -45,6 +58,10 @@ subscriptions model =
         Home model_ ->
             Page.Home.subscriptions model_
                 |> Sub.map HomeMsg
+
+        Highscores model_ ->
+            Page.Highscores.subscriptions model_
+                |> Sub.map HighscoresMsg
 
         NotFound ->
             Sub.none
@@ -59,6 +76,10 @@ view model shared =
         Home model_ ->
             Page.Home.view model_ shared
                 |> mapDoc HomeMsg
+
+        Highscores model_ ->
+            Page.Highscores.view model_ shared
+                |> mapDoc HighscoresMsg
 
         NotFound ->
             { title = "Not Found"

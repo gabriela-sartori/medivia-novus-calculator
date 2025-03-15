@@ -9,3 +9,4 @@ send =
 
 type ToBackend
     = DoNothing
+    | FetchHighscores

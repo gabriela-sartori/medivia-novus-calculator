@@ -2,9 +2,11 @@ module Types exposing (..)
 
 import Bridge
 import Browser exposing (UrlRequest)
-import Browser.Navigation exposing (Key)
+import Dict exposing (Dict)
+import Http
 import Page
 import Shared
+import Time
 import Url exposing (Url)
 
 
@@ -15,7 +17,9 @@ type alias FrontendModel =
 
 
 type alias BackendModel =
-    {}
+    { fetchMiracleConsecutiveFails : Int
+    , miracleRookHighscores : Dict Int (List { nick : String, level : Int, exp : Int })
+    }
 
 
 type FrontendMsg
@@ -32,6 +36,8 @@ type alias ToBackend =
 
 type BackendMsg
     = BackendMsg_DoNothing
+    | BackendMsg_FetchMiracleHighscores Time.Posix
+    | BackendMsg_GotMiracleHighscores Time.Posix (Result Http.Error String)
 
 
 type ToFrontend

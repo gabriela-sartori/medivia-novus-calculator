@@ -18,16 +18,19 @@ import Url.Parser exposing ((</>), (<?>), map, s)
 
 type Route
     = Home
+    | Highscores
     | NotFound
 
 
 fromUrl : Url -> Route
 fromUrl url =
     [ map Home Url.Parser.top
+    , map Highscores (s "highscores")
     ]
         |> Url.Parser.oneOf
         |> (\parser -> Url.Parser.parse parser url)
         |> Maybe.withDefault NotFound
+        |> Debug.log "fromUrl"
 
 
 toString : Route -> String
@@ -38,6 +41,9 @@ toString route =
             case route of
                 Home ->
                     []
+
+                Highscores ->
+                    [ "highscores" ]
 
                 NotFound ->
                     [ "404" ]
