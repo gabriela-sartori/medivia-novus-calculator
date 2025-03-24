@@ -3,18 +3,11 @@ module Page.Highscores exposing (Model, Msg(..), init, subscriptions, update, vi
 import Bridge
 import Dict exposing (Dict)
 import Element as E
-import Element.Border as EBO
 import Element.Font as EF
-import Element.Input as EI
-import Html as H
-import Html.Attributes as HA
-import Html.Events as HE
-import Lamdera
 import List.Extra
 import Set exposing (Set)
 import Shared
 import Task
-import Theme exposing (edges)
 import Time
 
 
@@ -63,14 +56,14 @@ subscriptions _ =
 
 
 view : Model -> Shared.Model -> { title : String, body : List (E.Element Msg) }
-view model shared =
+view model _ =
     { title = "Highscores"
-    , body = [ view_ model shared ]
+    , body = [ view_ model ]
     }
 
 
-view_ : Model -> Shared.Model -> E.Element Msg
-view_ model shared =
+view_ : Model -> E.Element Msg
+view_ model =
     if not model.loaded then
         E.column [ E.padding 16 ] [ E.text "..." ]
 
