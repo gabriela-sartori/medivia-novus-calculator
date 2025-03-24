@@ -19,6 +19,7 @@ type alias FrontendModel =
 type alias BackendModel =
     { fetchMiracleConsecutiveFails : Int
     , miracleRookHighscores : Dict Int (List { nick : String, level : Int, exp : Int })
+    , bump___REMOVE_ME : ()
     }
 
 

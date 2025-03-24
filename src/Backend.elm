@@ -29,6 +29,7 @@ init : ( Model, Cmd BackendMsg )
 init =
     ( { fetchMiracleConsecutiveFails = 0
       , miracleRookHighscores = Dict.empty
+      , bump___REMOVE_ME = ()
       }
     , Cmd.none
     )
